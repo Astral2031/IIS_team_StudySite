@@ -1,8 +1,11 @@
 // src/pages/Home.js
 import { postService, studyService } from "../services/storageService";
 
+//   Carousel 컴포넌트 import 추가
+import { Carousel } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
+
 
 const Home = () => {
   const [newStudies, setNewStudies] = useState([]);
@@ -57,6 +60,34 @@ const Home = () => {
 
   return (
     <div>
+      {/* 슬라이드 배너 추가 */}
+      <Carousel className="mb-5">
+        <Carousel.Item>
+          <img
+            className="d-block w-100"
+            src="/images/banner1.jpg"
+            alt="Study Hub Banner 1"
+            style={{ maxHeight: "500px", objectFit: "cover" }}
+          />
+          <Carousel.Caption>
+            <h3>스터디 허브에 오신 것을 환영합니다</h3>
+            <p>함께 공부하고 성장할 수 있는 스터디 허브입니다.</p>
+          </Carousel.Caption>
+        </Carousel.Item>
+        <Carousel.Item>
+          <img
+            className="d-block w-100"
+            src="/images/banner2.jpg"
+            alt="Study Hub Banner 2"
+            style={{ maxHeight: "500px", objectFit: "cover" }}
+          />
+          <Carousel.Caption>
+            <h3>스터디 그룹 모집</h3>
+            <p>다양한 분야의 스터디 그룹에 참여하거나 직접 모집해 보세요.</p>
+          </Carousel.Caption>
+        </Carousel.Item>
+      </Carousel>
+
       <div className="text-center mb-5">
         <h1 className="display-4">스터디 허브에 오신 것을 환영합니다!</h1>
         <p className="lead">함께 공부하고 성장할 수 있는 스터디 허브입니다.</p>
@@ -167,7 +198,9 @@ const Home = () => {
                     댓글 {post.comments?.length || 0}개
                   </small>
                 </div>
-                <small className="text-muted">{post.createdAt}</small>
+                <small className="text-muted">
+                  {formatDate(post.createdAt)}
+                </small>
               </div>
             </Link>
           ))}

@@ -35,6 +35,7 @@ const initializeStorage = () => {
         isQuestion: false,
         hasAnswer: false,
         likedBy: [],
+        authorId: 1, // 작성자 ID 추가
       },
       {
         id: 2,
@@ -50,6 +51,7 @@ const initializeStorage = () => {
         isQuestion: false,
         hasAnswer: false,
         likedBy: [],
+        authorId: 1, // 작성자 ID 추가
       },
       {
         id: 3,
@@ -68,6 +70,7 @@ const initializeStorage = () => {
             author: "코딩초보",
             createdAt: "2025-05-04 19:15",
             isAnswer: false,
+            authorId: 2, // 작성자 ID 추가
           },
           {
             id: 5,
@@ -75,11 +78,13 @@ const initializeStorage = () => {
             author: "자바왕",
             createdAt: "2025-05-04 20:30",
             isAnswer: false,
+            authorId: 3, // 작성자 ID 추가
           },
         ],
         isQuestion: false,
         hasAnswer: false,
         likedBy: [],
+        authorId: 3, // 작성자 ID 추가
       },
       {
         id: 4,
@@ -98,11 +103,13 @@ const initializeStorage = () => {
             author: "취준생",
             createdAt: "2025-05-03 10:05",
             isAnswer: false,
+            authorId: 4, // 작성자 ID 추가
           },
         ],
         isQuestion: false,
         hasAnswer: false,
         likedBy: [],
+        authorId: 5, // 작성자 ID 추가
       },
       {
         id: 5,
@@ -122,11 +129,13 @@ const initializeStorage = () => {
             author: "스프링마스터",
             createdAt: "2025-05-02 11:30",
             isAnswer: true,
+            authorId: 6, // 작성자 ID 추가
           },
         ],
         isQuestion: true,
         hasAnswer: true,
         likedBy: [],
+        authorId: 7, // 작성자 ID 추가
       },
       {
         id: 6,
@@ -142,6 +151,7 @@ const initializeStorage = () => {
         isQuestion: true,
         hasAnswer: false,
         likedBy: [],
+        authorId: 8, // 작성자 ID 추가
       },
       {
         id: 7,
@@ -161,11 +171,13 @@ const initializeStorage = () => {
             author: "풀스택개발자",
             createdAt: "2025-05-01 13:20",
             isAnswer: true,
+            authorId: 9, // 작성자 ID 추가
           },
         ],
         isQuestion: true,
         hasAnswer: true,
         likedBy: [],
+        authorId: 10, // 작성자 ID 추가
       },
       {
         id: 8,
@@ -181,12 +193,14 @@ const initializeStorage = () => {
         isQuestion: false,
         hasAnswer: false,
         likedBy: [],
+        authorId: 11, // 작성자 ID 추가
       },
     ];
 
     localStorage.setItem("posts", JSON.stringify(initialPosts));
   }
 
+  // 기존 코드 유지...
   // 인기 스터디 그룹 데이터가 없으면 초기화
   if (!localStorage.getItem("popularStudies")) {
     const popularStudies = [
@@ -273,6 +287,7 @@ const initializeStorage = () => {
 
 // 게시글 관련 서비스
 const postService = {
+  // 기존 코드 유지...
   // 모든 게시글 가져오기 (최신순 정렬)
   getAllPosts: () => {
     const posts = JSON.parse(localStorage.getItem("posts")) || [];
@@ -449,6 +464,179 @@ const postService = {
       return dateB - dateA; // 최신 게시글이 먼저 오도록 내림차순 정렬
     });
   },
+
+  // 새로 추가된 기능들
+
+  // 게시글 수정
+  updatePost: (postId, userId, updatedData) => {
+    const posts = JSON.parse(localStorage.getItem("posts")) || [];
+    const index = posts.findIndex((post) => post.id === parseInt(postId));
+
+    if (index === -1) {
+      throw new Error("게시글을 찾을 수 없습니다.");
+    }
+
+    // 게시글 작성자 확인
+    if (posts[index].authorId !== userId) {
+      throw new Error("본인이 작성한 게시글만 수정할 수 있습니다.");
+    }
+
+    // 게시글 정보 업데이트
+    const updatedPost = {
+      ...posts[index],
+      ...updatedData,
+      updatedAt: new Date().toLocaleString("ko-KR"), // 수정 시간 추가
+    };
+
+    // 게시글 정보 변경 금지 항목 유지
+    updatedPost.id = posts[index].id;
+    updatedPost.author = posts[index].author;
+    updatedPost.authorId = posts[index].authorId;
+    updatedPost.createdAt = posts[index].createdAt;
+    updatedPost.viewCount = posts[index].viewCount;
+    updatedPost.likeCount = posts[index].likeCount;
+    updatedPost.comments = posts[index].comments;
+    updatedPost.likedBy = posts[index].likedBy;
+
+    posts[index] = updatedPost;
+    localStorage.setItem("posts", JSON.stringify(posts));
+    return updatedPost;
+  },
+
+  // 게시글 삭제
+  deletePost: (postId, userId) => {
+    const posts = JSON.parse(localStorage.getItem("posts")) || [];
+    const index = posts.findIndex((post) => post.id === parseInt(postId));
+
+    if (index === -1) {
+      throw new Error("게시글을 찾을 수 없습니다.");
+    }
+
+    // 게시글 작성자 확인
+    if (posts[index].authorId !== userId) {
+      throw new Error("본인이 작성한 게시글만 삭제할 수 있습니다.");
+    }
+
+    // 게시글 삭제
+    const deletedPost = posts.splice(index, 1)[0];
+    localStorage.setItem("posts", JSON.stringify(posts));
+    return deletedPost;
+  },
+
+  // 댓글 수정
+  updateComment: (postId, commentId, userId, updatedContent) => {
+    const posts = JSON.parse(localStorage.getItem("posts")) || [];
+    const postIndex = posts.findIndex((post) => post.id === parseInt(postId));
+
+    if (postIndex === -1) {
+      throw new Error("게시글을 찾을 수 없습니다.");
+    }
+
+    const commentIndex = posts[postIndex].comments.findIndex(
+      (comment) => comment.id === parseInt(commentId)
+    );
+
+    if (commentIndex === -1) {
+      throw new Error("댓글을 찾을 수 없습니다.");
+    }
+
+    // 댓글 작성자 확인
+    if (posts[postIndex].comments[commentIndex].authorId !== userId) {
+      throw new Error("본인이 작성한 댓글만 수정할 수 있습니다.");
+    }
+
+    // 댓글 수정
+    posts[postIndex].comments[commentIndex].content = updatedContent;
+    posts[postIndex].comments[commentIndex].updatedAt =
+      new Date().toLocaleString("ko-KR");
+    posts[postIndex].comments[commentIndex].isEdited = true; // 수정됨 표시
+
+    localStorage.setItem("posts", JSON.stringify(posts));
+    return posts[postIndex].comments[commentIndex];
+  },
+
+  // 댓글 삭제
+  deleteComment: (postId, commentId, userId) => {
+    const posts = JSON.parse(localStorage.getItem("posts")) || [];
+    const postIndex = posts.findIndex((post) => post.id === parseInt(postId));
+
+    if (postIndex === -1) {
+      throw new Error("게시글을 찾을 수 없습니다.");
+    }
+
+    const commentIndex = posts[postIndex].comments.findIndex(
+      (comment) => comment.id === parseInt(commentId)
+    );
+
+    if (commentIndex === -1) {
+      throw new Error("댓글을 찾을 수 없습니다.");
+    }
+
+    // 댓글 작성자 확인
+    if (posts[postIndex].comments[commentIndex].authorId !== userId) {
+      throw new Error("본인이 작성한 댓글만 삭제할 수 있습니다.");
+    }
+
+    // 댓글 삭제
+    const deletedComment = posts[postIndex].comments.splice(commentIndex, 1)[0];
+
+    // 삭제된 댓글이 답변이었는지 확인하고 게시글의 hasAnswer 상태 업데이트
+    if (deletedComment.isAnswer) {
+      // 다른 답변이 있는지 확인
+      const hasOtherAnswers = posts[postIndex].comments.some(
+        (comment) => comment.isAnswer
+      );
+      posts[postIndex].hasAnswer = hasOtherAnswers;
+    }
+
+    localStorage.setItem("posts", JSON.stringify(posts));
+    return deletedComment;
+  },
+
+  // 사용자가 작성한 게시글 가져오기
+  getUserPosts: (userId) => {
+    const posts = JSON.parse(localStorage.getItem("posts")) || [];
+    const userPosts = posts.filter(
+      (post) => post.authorId === parseInt(userId)
+    );
+
+    // 최신순 정렬
+    return [...userPosts].sort((a, b) => {
+      const dateA = new Date(a.createdAt.replace(/-/g, "/"));
+      const dateB = new Date(b.createdAt.replace(/-/g, "/"));
+      return dateB - dateA;
+    });
+  },
+
+  // 사용자가 작성한 댓글 가져오기
+  getUserComments: (userId) => {
+    const posts = JSON.parse(localStorage.getItem("posts")) || [];
+    const userComments = [];
+
+    // 모든 게시글을 순회하며 사용자가 작성한 댓글 찾기
+    posts.forEach((post) => {
+      const comments = post.comments.filter(
+        (comment) => comment.authorId === parseInt(userId)
+      );
+
+      if (comments.length > 0) {
+        comments.forEach((comment) => {
+          userComments.push({
+            postId: post.id,
+            postTitle: post.title,
+            comment,
+          });
+        });
+      }
+    });
+
+    // 최신순 정렬
+    return [...userComments].sort((a, b) => {
+      const dateA = new Date(a.comment.createdAt.replace(/-/g, "/"));
+      const dateB = new Date(b.comment.createdAt.replace(/-/g, "/"));
+      return dateB - dateA;
+    });
+  },
 };
 
 // 스터디 관련 서비스
@@ -502,6 +690,12 @@ const authService = {
     // 비밀번호 정보 제외하고 반환
     const { password, ...userInfo } = newUser;
     return userInfo;
+  },
+
+  // 현재 로그인한 사용자 정보 가져오기 (프론트엔드에서 활용)
+  getCurrentUser: () => {
+    const userJson = localStorage.getItem("currentUser");
+    return userJson ? JSON.parse(userJson) : null;
   },
 };
 
