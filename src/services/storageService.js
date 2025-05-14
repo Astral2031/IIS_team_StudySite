@@ -35,7 +35,7 @@ const initializeStorage = () => {
         isQuestion: false,
         hasAnswer: false,
         likedBy: [],
-        authorId: 1, // 작성자 ID 추가
+        authorId: 1, // 관리자 ID
       },
       {
         id: 2,
@@ -200,7 +200,6 @@ const initializeStorage = () => {
     localStorage.setItem("posts", JSON.stringify(initialPosts));
   }
 
-  // 기존 코드 유지...
   // 인기 스터디 그룹 데이터가 없으면 초기화
   if (!localStorage.getItem("popularStudies")) {
     const popularStudies = [
@@ -270,25 +269,53 @@ const initializeStorage = () => {
     localStorage.setItem("likeInfo", JSON.stringify({}));
   }
 
-  // 로그인 정보 초기화
+  // 로그인 정보 초기화 (관리자 계정 추가)
   if (!localStorage.getItem("users")) {
     const users = [
       {
         id: 1,
+        name: "관리자",
+        email: "admin@example.com",
+        password: "admin123", // 실제로는 해시 처리 필요
+        role: "admin", // 관리자 역할 추가
+      },
+      {
+        id: 2,
         name: "테스트 사용자",
         email: "test@example.com",
         password: "password", // 실제로는 해시 처리 필요
+        role: "user", // 일반 사용자 역할
       },
     ];
 
     localStorage.setItem("users", JSON.stringify(users));
+  } else {
+    // 기존 사용자 데이터가 있다면 관리자 계정 추가 확인
+    const users = JSON.parse(localStorage.getItem("users"));
+    const adminExists = users.some((user) => user.role === "admin");
+
+    if (!adminExists) {
+      // 관리자 계정이 없으면 추가
+      users.push({
+        id: users.length > 0 ? Math.max(...users.map((u) => u.id)) + 1 : 1,
+        name: "관리자",
+        email: "admin@example.com",
+        password: "admin123", // 실제로는 해시 처리 필요
+        role: "admin",
+      });
+      localStorage.setItem("users", JSON.stringify(users));
+    }
   }
+
+  // 관리자 계정 정보 콘솔에 출력
+  console.log("관리자 계정 정보:", {
+    email: "admin@example.com",
+    password: "admin123",
+  });
 };
 
 // 게시글 관련 서비스
 const postService = {
-  // 기존 코드 유지...
-  // 모든 게시글 가져오기 (최신순 정렬)
   getAllPosts: () => {
     const posts = JSON.parse(localStorage.getItem("posts")) || [];
     // 최신순 정렬
@@ -417,8 +444,13 @@ const postService = {
     return null;
   },
 
-  // 게시글 생성 (ID 자동 생성)
-  createPost: (post) => {
+  // 게시글 생성 (수정: 관리자 권한 체크 추가)
+  createPost: (post, user) => {
+    // 공지사항인 경우 관리자 권한 체크
+    if (post.category === "notice" && (!user || user.role !== "admin")) {
+      throw new Error("공지사항은 관리자만 작성할 수 있습니다.");
+    }
+
     const posts = JSON.parse(localStorage.getItem("posts")) || [];
 
     // 현재 존재하는 게시글 ID 목록 가져오기
@@ -467,8 +499,8 @@ const postService = {
 
   // 새로 추가된 기능들
 
-  // 게시글 수정
-  updatePost: (postId, userId, updatedData) => {
+  // 게시글 수정 (수정: 관리자 권한 체크 추가)
+  updatePost: (postId, user, updatedData) => {
     const posts = JSON.parse(localStorage.getItem("posts")) || [];
     const index = posts.findIndex((post) => post.id === parseInt(postId));
 
@@ -476,9 +508,19 @@ const postService = {
       throw new Error("게시글을 찾을 수 없습니다.");
     }
 
-    // 게시글 작성자 확인
-    if (posts[index].authorId !== userId) {
-      throw new Error("본인이 작성한 게시글만 수정할 수 있습니다.");
+    const post = posts[index];
+
+    // 게시글 작성자 또는 관리자만 수정 가능
+    const isAuthor = post.authorId === user.id || post.author === user.name;
+    const isAdmin = user.role === "admin";
+
+    if (!isAuthor && !isAdmin) {
+      throw new Error("게시글 수정 권한이 없습니다.");
+    }
+
+    // 공지사항으로 카테고리 변경 시 관리자 권한 체크
+    if (updatedData.category === "notice" && !isAdmin) {
+      throw new Error("공지사항은 관리자만 작성/수정할 수 있습니다.");
     }
 
     // 게시글 정보 업데이트
@@ -487,7 +529,6 @@ const postService = {
       ...updatedData,
       updatedAt: new Date().toLocaleString("ko-KR"), // 수정 시간 추가
     };
-
     // 게시글 정보 변경 금지 항목 유지
     updatedPost.id = posts[index].id;
     updatedPost.author = posts[index].author;
@@ -503,8 +544,8 @@ const postService = {
     return updatedPost;
   },
 
-  // 게시글 삭제
-  deletePost: (postId, userId) => {
+  // 게시글 삭제 (수정: 관리자 권한 체크 추가)
+  deletePost: (postId, user) => {
     const posts = JSON.parse(localStorage.getItem("posts")) || [];
     const index = posts.findIndex((post) => post.id === parseInt(postId));
 
@@ -512,9 +553,14 @@ const postService = {
       throw new Error("게시글을 찾을 수 없습니다.");
     }
 
-    // 게시글 작성자 확인
-    if (posts[index].authorId !== userId) {
-      throw new Error("본인이 작성한 게시글만 삭제할 수 있습니다.");
+    const post = posts[index];
+
+    // 게시글 작성자 또는 관리자만 삭제 가능
+    const isAuthor = post.authorId === user.id || post.author === user.name;
+    const isAdmin = user.role === "admin";
+
+    if (!isAuthor && !isAdmin) {
+      throw new Error("게시글 삭제 권한이 없습니다.");
     }
 
     // 게시글 삭제
@@ -652,7 +698,7 @@ const studyService = {
   },
 };
 
-// 사용자 인증 관련 서비스
+// 사용자 인증 관련 서비스 (수정)
 const authService = {
   // 로그인
   login: (email, password) => {
@@ -682,6 +728,7 @@ const authService = {
     const newUser = {
       id: Date.now(),
       ...userData,
+      role: "user", // 기본적으로 일반 사용자 역할 부여
     };
 
     users.push(newUser);
@@ -692,10 +739,15 @@ const authService = {
     return userInfo;
   },
 
-  // 현재 로그인한 사용자 정보 가져오기 (프론트엔드에서 활용)
+  // 현재 로그인한 사용자 정보 가져오기
   getCurrentUser: () => {
     const userJson = localStorage.getItem("currentUser");
     return userJson ? JSON.parse(userJson) : null;
+  },
+
+  // 관리자 여부 확인 함수 추가
+  isAdmin: (user) => {
+    return user && user.role === "admin";
   },
 };
 

@@ -7,7 +7,7 @@ import React, { useState } from "react";
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout, isAuthenticated } = useAuth();
+  const { currentUser, logout, isAuthenticated, isAdmin } = useAuth(); // isAdmin 추가
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (e) => {
@@ -95,6 +95,10 @@ const Header = () => {
                 aria-expanded="false"
               >
                 {currentUser.name}
+                {/* 관리자 배지 추가 */}
+                {isAdmin && (
+                  <span className="badge bg-danger ms-1">관리자</span>
+                )}
               </button>
               <ul
                 className="dropdown-menu dropdown-menu-end"
@@ -110,6 +114,22 @@ const Header = () => {
                     내 스터디
                   </Link>
                 </li>
+                {/* 관리자 메뉴 추가 */}
+                {isAdmin && (
+                  <>
+                    <li>
+                      <hr className="dropdown-divider" />
+                    </li>
+                    <li>
+                      <Link
+                        className="dropdown-item"
+                        to="/community/create/notice"
+                      >
+                        공지사항 작성
+                      </Link>
+                    </li>
+                  </>
+                )}
                 <li>
                   <hr className="dropdown-divider" />
                 </li>

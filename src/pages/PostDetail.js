@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
 
 const PostDetail = () => {
   const { id } = useParams();
-  const { currentUser, isAuthenticated } = useAuth();
+  const { currentUser, isAuthenticated, isAdmin } = useAuth(); // isAdmin 추가
   const navigate = useNavigate();
 
   const [post, setPost] = useState(null);
@@ -136,25 +136,16 @@ const PostDetail = () => {
     }
 
     try {
-      // 일단 게시글을 직접 수정 (서비스 통해서가 아님)
-      const updatedPost = { ...post };
-      updatedPost.title = editTitle;
-      updatedPost.content = editContent;
-      updatedPost.updatedAt = new Date().toLocaleString("ko-KR");
+      // 게시글 수정 (수정: 현재 사용자 객체 전달)
+      const updatedPost = postService.updatePost(parseInt(id), currentUser, {
+        title: editTitle,
+        content: editContent,
+        category: post.category, // 카테고리는 유지
+      });
 
-      // localStorage 직접 수정
-      const posts = JSON.parse(localStorage.getItem("posts")) || [];
-      const index = posts.findIndex((p) => p.id === parseInt(id));
-
-      if (index !== -1) {
-        posts[index] = { ...posts[index], ...updatedPost };
-        localStorage.setItem("posts", JSON.stringify(posts));
-        setPost(updatedPost);
-        setIsEditingPost(false);
-        alert("게시글이 수정되었습니다.");
-      } else {
-        throw new Error("게시글을 찾을 수 없습니다.");
-      }
+      setPost(updatedPost);
+      setIsEditingPost(false);
+      alert("게시글이 수정되었습니다.");
     } catch (error) {
       console.error("게시글 수정 중 오류가 발생했습니다:", error);
       alert(error.message || "게시글 수정에 실패했습니다.");
@@ -168,27 +159,20 @@ const PostDetail = () => {
     }
 
     try {
-      // localStorage에서 직접 삭제
-      const posts = JSON.parse(localStorage.getItem("posts")) || [];
-      const index = posts.findIndex((p) => p.id === parseInt(id));
+      // 게시글 삭제 (수정: 현재 사용자 객체 전달)
+      postService.deletePost(parseInt(id), currentUser);
+      alert("게시글이 삭제되었습니다.");
 
-      if (index !== -1) {
-        posts.splice(index, 1);
-        localStorage.setItem("posts", JSON.stringify(posts));
-        alert("게시글이 삭제되었습니다.");
-        // 삭제 후 목록 페이지로 이동
-        navigate(
-          `/community/${
-            post.category === "notice"
-              ? "notice"
-              : post.category === "freetalk"
-              ? "freetalk"
-              : "qna"
-          }`
-        );
-      } else {
-        throw new Error("게시글을 찾을 수 없습니다.");
-      }
+      // 삭제 후 목록 페이지로 이동
+      navigate(
+        `/community/${
+          post.category === "notice"
+            ? "notice"
+            : post.category === "freetalk"
+            ? "freetalk"
+            : "qna"
+        }`
+      );
     } catch (error) {
       console.error("게시글 삭제 중 오류가 발생했습니다:", error);
       alert(error.message || "게시글 삭제에 실패했습니다.");
@@ -215,36 +199,15 @@ const PostDetail = () => {
     }
 
     try {
-      // 댓글 수정 (직접 localStorage 조작)
-      const posts = JSON.parse(localStorage.getItem("posts")) || [];
-      const postIndex = posts.findIndex((p) => p.id === parseInt(id));
-
-      if (postIndex === -1) {
-        throw new Error("게시글을 찾을 수 없습니다.");
-      }
-
-      const commentIndex = posts[postIndex].comments.findIndex(
-        (c) => c.id === commentId
+      // 댓글 수정
+      postService.updateComment(
+        parseInt(id),
+        commentId,
+        currentUser.id,
+        editCommentContent
       );
 
-      if (commentIndex === -1) {
-        throw new Error("댓글을 찾을 수 없습니다.");
-      }
-
-      // 댓글 작성자 확인
-      if (posts[postIndex].comments[commentIndex].author !== currentUser.name) {
-        throw new Error("본인이 작성한 댓글만 수정할 수 있습니다.");
-      }
-
-      // 댓글 수정
-      posts[postIndex].comments[commentIndex].content = editCommentContent;
-      posts[postIndex].comments[commentIndex].updatedAt =
-        new Date().toLocaleString("ko-KR");
-      posts[postIndex].comments[commentIndex].isEdited = true;
-
-      localStorage.setItem("posts", JSON.stringify(posts));
-
-      // 게시글 다시 불러오기
+      // 게시글 다시 가져오기
       fetchPost();
       setEditingCommentId(null);
       setEditCommentContent("");
@@ -262,44 +225,10 @@ const PostDetail = () => {
     }
 
     try {
-      // 댓글 삭제 (직접 localStorage 조작)
-      const posts = JSON.parse(localStorage.getItem("posts")) || [];
-      const postIndex = posts.findIndex((p) => p.id === parseInt(id));
-
-      if (postIndex === -1) {
-        throw new Error("게시글을 찾을 수 없습니다.");
-      }
-
-      const commentIndex = posts[postIndex].comments.findIndex(
-        (c) => c.id === commentId
-      );
-
-      if (commentIndex === -1) {
-        throw new Error("댓글을 찾을 수 없습니다.");
-      }
-
-      // 댓글 작성자 확인
-      if (posts[postIndex].comments[commentIndex].author !== currentUser.name) {
-        throw new Error("본인이 작성한 댓글만 삭제할 수 있습니다.");
-      }
-
-      // 삭제할 댓글이 답변인지 확인
-      const isAnswer = posts[postIndex].comments[commentIndex].isAnswer;
-
       // 댓글 삭제
-      posts[postIndex].comments.splice(commentIndex, 1);
+      postService.deleteComment(parseInt(id), commentId, currentUser.id);
 
-      // 답변 삭제 시 게시글 hasAnswer 상태 업데이트
-      if (isAnswer) {
-        const hasOtherAnswers = posts[postIndex].comments.some(
-          (c) => c.isAnswer
-        );
-        posts[postIndex].hasAnswer = hasOtherAnswers;
-      }
-
-      localStorage.setItem("posts", JSON.stringify(posts));
-
-      // 게시글 다시 불러오기
+      // 게시글 다시 가져오기
       fetchPost();
       alert("댓글이 삭제되었습니다.");
     } catch (error) {
@@ -312,22 +241,16 @@ const PostDetail = () => {
   const isPostAuthor = () => {
     if (!isAuthenticated || !currentUser || !post) return false;
 
-    console.log("게시글 작성자 확인:", {
-      currentUser: currentUser,
-      post: post,
-      nameMatch: post.author === currentUser.name,
-    });
-
-    // 작성자 이름으로 확인
-    return post.author === currentUser.name;
+    // 작성자 이름으로 확인 또는 관리자인 경우 접근 허용
+    return post.author === currentUser.name || isAdmin;
   };
 
   // 현재 사용자가 댓글 작성자인지 확인하는 함수
   const isCommentAuthor = (comment) => {
     if (!isAuthenticated || !currentUser) return false;
 
-    // 작성자 이름으로 확인
-    return comment.author === currentUser.name;
+    // 작성자 이름으로 확인 또는 관리자인 경우 접근 허용
+    return comment.author === currentUser.name || isAdmin;
   };
 
   if (loading) {
@@ -365,7 +288,7 @@ const PostDetail = () => {
             목록으로
           </Link>
 
-          {/* 게시글 작성자인 경우에만 수정/삭제 버튼 표시 */}
+          {/* 게시글 작성자 또는 관리자인 경우에만 수정/삭제 버튼 표시 */}
           {isPostAuthor() && (
             <div>
               <button
@@ -483,7 +406,7 @@ const PostDetail = () => {
                           {comment.isEdited && " (수정됨)"}
                         </span>
 
-                        {/* 댓글 작성자인 경우에만 수정/삭제 버튼 표시 */}
+                        {/* 댓글 작성자 또는 관리자인 경우에만 수정/삭제 버튼 표시 */}
                         {isCommentAuthor(comment) &&
                           editingCommentId !== comment.id && (
                             <>
