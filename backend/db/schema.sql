@@ -5,8 +5,8 @@ CREATE TABLE users ( -- 사용자 기본 정보
   email VARCHAR(255) NOT NULL UNIQUE,                  -- 로그인 이메일 (중복 불가)
   password VARCHAR(255) NOT NULL,                      -- 비밀번호 (암호화 저장)
   nickname VARCHAR(50) NOT NULL,                       -- 사용자 닉네임
-  university VARCHAR(100) NOT NULL,                    -- 소속 대학
-  birthdate DATE NOT NULL,                             -- 생년월일
+  university VARCHAR(100) NULL,                        -- 소속 대학
+  birthdate NULL,                                      -- 생년월일
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,       -- 가입 일자
   is_admin BOOLEAN DEFAULT FALSE                       -- 관리자 여부 (기본값 false)
 );
@@ -34,7 +34,7 @@ CREATE TABLE study_applications ( -- 스터디 지원 기록
   study_id BIGINT NOT NULL,                                          -- 지원한 스터디 ID
   user_id INT NOT NULL,                                              -- 지원자 ID
   message TEXT,                                                      -- 자기소개 또는 지원 메시지
-  status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',  -- 지원 상태(지원 대기 중, 승인, 거절)
+  status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',  -- 지원 상태(대기 중, 승인, 거절)
   applied_at DATETIME DEFAULT CURRENT_TIMESTAMP,                     -- 지원 일시
 
   FOREIGN KEY (study_id) REFERENCES studies(id) ON DELETE CASCADE,   -- 스터디 삭제 시 지원 내역 삭제
