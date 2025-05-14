@@ -72,8 +72,12 @@ const PostList = () => {
       <div className="col-12">
         <CommunityNav category={category} />
 
-        <div className="mb-3">
-          <form className="d-flex" onSubmit={handleSearch}>
+        <div className="mb-3 d-flex justify-content-center">
+          <form
+            className="d-flex"
+            onSubmit={handleSearch}
+            style={{ width: "70%" }}
+          >
             <input
               className="form-control me-2"
               type="search"
@@ -81,9 +85,13 @@ const PostList = () => {
               aria-label="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ maxWidth: "80%", flexGrow: 1 }}
+              style={{ flexGrow: 1 }}
             />
-            <button className="btn btn-outline-primary" type="submit">
+            <button
+              className="btn btn-outline-primary"
+              type="submit"
+              style={{ minWidth: "100px" }}
+            >
               검색
             </button>
           </form>
@@ -164,8 +172,17 @@ const PostList = () => {
               {isAuthenticated ? (
                 <Link
                   to={`/community/create/${category}`}
-                  className="btn btn-primary btn-sm"
-                  style={{ fontSize: "1.1rem" }} // 글자 크기 조정
+                  className="btn btn-primary" // btn-sm 클래스 제거
+                  style={{
+                    fontSize: "0.875rem", // 글자 크기 설정
+                    padding: "0.375rem 0.75rem", // 표준 버튼 패딩
+                    lineHeight: "1.5",
+                    borderRadius: "0.25rem",
+                    height: "38px", // 높이 고정
+                    display: "inline-flex", // 내용 중앙 정렬
+                    alignItems: "center", // 내용 수직 중앙
+                    justifyContent: "center", // 내용 중앙
+                  }}
                 >
                   글쓰기
                 </Link>
@@ -173,8 +190,17 @@ const PostList = () => {
                 <Link
                   to="/signin"
                   state={{ from: `/community/create/${category}` }}
-                  className="btn btn-primary btn-sm"
-                  style={{ fontSize: "1.1rem" }} // 글자 크기 조정
+                  className="btn btn-primary" // btn-sm 클래스 제거
+                  style={{
+                    fontSize: "0.875rem", // 글자 크기 설정
+                    padding: "0.375rem 0.75rem", // 표준 버튼 패딩
+                    lineHeight: "1.5",
+                    borderRadius: "0.25rem",
+                    height: "38px", // 높이 고정
+                    display: "inline-flex", // 내용 중앙
+                    alignItems: "center", // 내용 중앙
+                    justifyContent: "center", // 내용 중앙
+                  }}
                 >
                   로그인 후 글쓰기
                 </Link>
