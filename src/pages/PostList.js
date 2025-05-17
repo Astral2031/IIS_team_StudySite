@@ -14,6 +14,8 @@ const PostList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPosts, setFilteredPosts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 5; // 페이지당 5개 게시글
 
   // src/pages/PostList.js의 useEffect 부분 수정
   useEffect(() => {
@@ -38,6 +40,7 @@ const PostList = () => {
 
         setPosts(sortedByIdDesc);
         setFilteredPosts(sortedByIdDesc);
+        setCurrentPage(1); // 카테고리 변경 시 첫 페이지로 이동
       } catch (error) {
         console.error("게시글을 불러오는 중 오류가 발생했습니다:", error);
       } finally {
@@ -65,7 +68,17 @@ const PostList = () => {
     );
 
     setFilteredPosts(filtered);
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
   };
+
+  // 페이지네이션 계산
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+  // 페이지 변경 함수
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div className="row">
@@ -116,8 +129,8 @@ const PostList = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredPosts.length > 0 ? (
-                  filteredPosts.map((post) => (
+                {currentPosts.length > 0 ? (
+                  currentPosts.map((post) => (
                     <tr key={post.id}>
                       <td>{post.id}</td>
                       <td>
@@ -151,23 +164,80 @@ const PostList = () => {
             </table>
 
             <div className="d-flex justify-content-between">
-              <nav aria-label="Page navigation">
-                <ul className="pagination">
-                  <li className="page-item">
-                    <button className="page-link" disabled>
-                      이전
-                    </button>
-                  </li>
-                  <li className="page-item active">
-                    <button className="page-link">1</button>
-                  </li>
-                  <li className="page-item">
-                    <button className="page-link" disabled>
-                      다음
-                    </button>
-                  </li>
-                </ul>
-              </nav>
+              {/* 페이지네이션 */}
+              {totalPages > 1 && (
+                <nav aria-label="Page navigation">
+                  <ul className="pagination">
+                    {/* 이전 버튼 */}
+                    <li
+                      className={`page-item ${
+                        currentPage === 1 ? "disabled" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => paginate(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        이전
+                      </button>
+                    </li>
+
+                    {/* 페이지 번호 */}
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <li
+                        key={i + 1}
+                        className={`page-item ${
+                          currentPage === i + 1 ? "active" : ""
+                        }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => paginate(i + 1)}
+                        >
+                          {i + 1}
+                        </button>
+                      </li>
+                    ))}
+
+                    {/* 다음 버튼 */}
+                    <li
+                      className={`page-item ${
+                        currentPage === totalPages ? "disabled" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => paginate(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        다음
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              )}
+
+              {/* 페이지네이션이 없는 경우에도 동일한 레이아웃 유지 */}
+              {totalPages <= 1 && (
+                <nav aria-label="Page navigation">
+                  <ul className="pagination">
+                    <li className="page-item disabled">
+                      <button className="page-link" disabled>
+                        이전
+                      </button>
+                    </li>
+                    <li className="page-item active">
+                      <button className="page-link">1</button>
+                    </li>
+                    <li className="page-item disabled">
+                      <button className="page-link" disabled>
+                        다음
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              )}
 
               {isAuthenticated ? (
                 <Link

@@ -7,7 +7,7 @@ import React, { useState } from "react";
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout, isAuthenticated, isAdmin } = useAuth(); // isAdmin 추가
+  const { currentUser, logout, isAuthenticated, isAdmin } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (e) => {
@@ -55,7 +55,7 @@ const Header = () => {
           </div>
         </div>
 
-        {/* 메인 메뉴 (List, Community) */}
+        {/* 메인 메뉴 */}
         <div className="main-menu py-2 border-top border-bottom">
           <ul className="nav justify-content-center">
             <li className="nav-item px-4">
@@ -63,11 +63,26 @@ const Header = () => {
                 className={({ isActive }) =>
                   isActive ? "nav-link fw-bold active" : "nav-link"
                 }
-                to="/list"
+                to="/study-list"
               >
                 List
               </NavLink>
             </li>
+
+            {/* MY STUDY 메뉴 - 로그인된 경우에만 표시 */}
+            {isAuthenticated && (
+              <li className="nav-item px-4">
+                <NavLink
+                  className={({ isActive }) =>
+                    isActive ? "nav-link fw-bold active" : "nav-link"
+                  }
+                  to="/my-studies"
+                >
+                  My Study
+                </NavLink>
+              </li>
+            )}
+
             <li className="nav-item px-4">
               <NavLink
                 className={({ isActive }) =>
@@ -94,8 +109,7 @@ const Header = () => {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                {currentUser.name}
-                {/* 관리자 배지 추가 */}
+                {currentUser?.name}
                 {isAdmin && (
                   <span className="badge bg-danger ms-1">관리자</span>
                 )}
@@ -110,11 +124,10 @@ const Header = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link className="dropdown-item" to="/mypage/studies">
+                  <Link className="dropdown-item" to="/my-studies">
                     내 스터디
                   </Link>
                 </li>
-                {/* 관리자 메뉴 추가 */}
                 {isAdmin && (
                   <>
                     <li>

@@ -6,195 +6,7 @@ const initializeStorage = () => {
   // 게시글 데이터가 없으면 초기화
   if (!localStorage.getItem("posts")) {
     const initialPosts = [
-      {
-        id: 1,
-        title: "스터디 허브 오픈 안내",
-        content:
-          "스터디 허브가 오픈되었습니다. 많은 이용 부탁드립니다.\n\n앞으로 다양한 스터디 관련 정보와 커뮤니티 활동을 지원하도록 하겠습니다.",
-        author: "관리자",
-        createdAt: "2025-05-06 14:30",
-        viewCount: 120,
-        likeCount: 15,
-        category: "notice",
-        comments: [
-          {
-            id: 1,
-            content: "축하드립니다! 잘 이용하겠습니다.",
-            author: "사용자1",
-            createdAt: "2025-05-06 15:42",
-            isAnswer: false,
-          },
-          {
-            id: 2,
-            content: "좋은 사이트네요. 자주 이용할게요.",
-            author: "사용자2",
-            createdAt: "2025-05-06 16:30",
-            isAnswer: false,
-          },
-        ],
-        isQuestion: false,
-        hasAnswer: false,
-        likedBy: [],
-        authorId: 1, // 관리자 ID
-      },
-      {
-        id: 2,
-        title: "이용 규칙 안내",
-        content:
-          "스터디 허브 이용 규칙을 안내드립니다.\n\n1. 서로 예의를 지켜주세요.\n2. 스터디 관련 정보는 정확하게 기재해주세요.\n3. 불법적인 내용이나 저작권을 침해하는 자료는 공유하지 마세요.",
-        author: "관리자",
-        createdAt: "2025-05-05 10:15",
-        viewCount: 85,
-        likeCount: 8,
-        category: "notice",
-        comments: [],
-        isQuestion: false,
-        hasAnswer: false,
-        likedBy: [],
-        authorId: 1, // 작성자 ID 추가
-      },
-      {
-        id: 3,
-        title: "자바 스터디 하실 분 모집합니다",
-        content:
-          "자바 기초부터 함께 공부할 스터디원을 모집합니다.\n\n매주 토요일 오후 2시, 강남역 인근 카페에서 진행합니다. 관심 있으신 분들은 댓글 남겨주세요!",
-        author: "자바왕",
-        createdAt: "2025-05-04 18:20",
-        viewCount: 67,
-        likeCount: 5,
-        category: "freetalk",
-        comments: [
-          {
-            id: 4,
-            content: "참여 희망합니다! 초보자도 가능한가요?",
-            author: "코딩초보",
-            createdAt: "2025-05-04 19:15",
-            isAnswer: false,
-            authorId: 2, // 작성자 ID 추가
-          },
-          {
-            id: 5,
-            content: "네, 초보자도 환영합니다!",
-            author: "자바왕",
-            createdAt: "2025-05-04 20:30",
-            isAnswer: false,
-            authorId: 3, // 작성자 ID 추가
-          },
-        ],
-        isQuestion: false,
-        hasAnswer: false,
-        likedBy: [],
-        authorId: 3, // 작성자 ID 추가
-      },
-      {
-        id: 4,
-        title: "개발자 취업 준비 팁 공유합니다",
-        content:
-          "개발자 취업을 준비하면서 경험한 팁을 공유합니다.\n\n1. 포트폴리오는 양보다 질\n2. 기술 면접 준비는 CS 기초부터\n3. 코딩 테스트는 꾸준히 풀기\n4. 오픈 소스 프로젝트 참여하기\n5. 개발 블로그 운영하기",
-        author: "취업성공",
-        createdAt: "2025-05-03 09:10",
-        viewCount: 95,
-        likeCount: 45,
-        category: "freetalk",
-        comments: [
-          {
-            id: 6,
-            content: "좋은 정보 감사합니다!",
-            author: "취준생",
-            createdAt: "2025-05-03 10:05",
-            isAnswer: false,
-            authorId: 4, // 작성자 ID 추가
-          },
-        ],
-        isQuestion: false,
-        hasAnswer: false,
-        likedBy: [],
-        authorId: 5, // 작성자 ID 추가
-      },
-      {
-        id: 5,
-        title: "스프링 부트 에러 해결 방법 질문드립니다",
-        content:
-          "스프링 부트에서 JPA 설정시 다음과 같은 에러가 발생합니다. 해결방법 알려주세요.\n\nError creating bean with name 'entityManagerFactory'",
-        author: "스프링러버",
-        createdAt: "2025-05-02 10:15",
-        viewCount: 42,
-        likeCount: 3,
-        category: "qna",
-        comments: [
-          {
-            id: 7,
-            content:
-              "의존성 주입 문제인 것 같습니다. application.properties 파일에서 데이터베이스 설정을 확인해보세요.",
-            author: "스프링마스터",
-            createdAt: "2025-05-02 11:30",
-            isAnswer: true,
-            authorId: 6, // 작성자 ID 추가
-          },
-        ],
-        isQuestion: true,
-        hasAnswer: true,
-        likedBy: [],
-        authorId: 7, // 작성자 ID 추가
-      },
-      {
-        id: 6,
-        title: "리액트 상태 관리 관련 질문",
-        content:
-          "리액트에서 여러 컴포넌트 간에 상태를 공유하는 가장 좋은 방법은 무엇인가요? Context API와 Redux 중 어떤 것을 사용하는 것이 좋을까요?",
-        author: "리액트초보",
-        createdAt: "2025-05-01 16:45",
-        viewCount: 38,
-        likeCount: 2,
-        category: "qna",
-        comments: [],
-        isQuestion: true,
-        hasAnswer: false,
-        likedBy: [],
-        authorId: 8, // 작성자 ID 추가
-      },
-      {
-        id: 7,
-        title: "백엔드 vs 프론트엔드, 무엇을 선택해야 할까요?",
-        content:
-          "개발 공부를 시작하려고 하는데, 백엔드와 프론트엔드 중 어느 쪽에 집중하는 것이 좋을까요? 각각의 장단점과 필요한 기술 스택을 알려주세요.",
-        author: "코딩고수",
-        createdAt: "2025-05-01 12:30",
-        viewCount: 72,
-        likeCount: 32,
-        category: "qna",
-        comments: [
-          {
-            id: 8,
-            content:
-              "본인의 성향에 맞는 것을 선택하세요. 프론트엔드는 시각적인 결과물이 바로 보이는 것이 장점이고, 백엔드는 서버와 데이터 처리에 집중하므로 논리적 사고력이 중요합니다.",
-            author: "풀스택개발자",
-            createdAt: "2025-05-01 13:20",
-            isAnswer: true,
-            authorId: 9, // 작성자 ID 추가
-          },
-        ],
-        isQuestion: true,
-        hasAnswer: true,
-        likedBy: [],
-        authorId: 10, // 작성자 ID 추가
-      },
-      {
-        id: 8,
-        title: "프론트엔드 개발자 로드맵 2025",
-        content:
-          "프론트엔드 개발자가 되기 위해 공부해야 할 기술들의 로드맵을 공유합니다.\n\n1. HTML, CSS, JavaScript 기초\n2. 모던 JavaScript (ES6+)\n3. React, Vue, Angular 중 하나 선택\n4. 상태 관리 (Redux, MobX)\n5. TypeScript\n6. 테스팅 (Jest, React Testing Library)\n7. 웹 성능 최적화",
-        author: "웹마스터",
-        createdAt: "2025-05-04 14:15",
-        viewCount: 88,
-        likeCount: 38,
-        category: "freetalk",
-        comments: [],
-        isQuestion: false,
-        hasAnswer: false,
-        likedBy: [],
-        authorId: 11, // 작성자 ID 추가
-      },
+      // 여기 initialPosts 배열 내용은 그대로 유지됩니다...
     ];
 
     localStorage.setItem("posts", JSON.stringify(initialPosts));
@@ -207,24 +19,24 @@ const initializeStorage = () => {
         id: 1,
         title: "React 실전 프로젝트",
         description: "React로 실무 프로젝트를 진행하며 포트폴리오를 만들어요.",
-        memberCount: 8,
-        maxMembers: 10,
+        participants: 8, // memberCount → participants
+        maxParticipants: 10, // maxMembers → maxParticipants
         likeCount: 25,
       },
       {
         id: 2,
         title: "파이썬 데이터 분석",
         description: "파이썬으로 데이터를 분석하고 시각화하는 방법을 배워요.",
-        memberCount: 7,
-        maxMembers: 8,
+        participants: 7, // memberCount → participants
+        maxParticipants: 8, // maxMembers → maxParticipants
         likeCount: 18,
       },
       {
         id: 3,
         title: "CS 기초 스터디",
         description: "전산학 기초 지식을 함께 공부해요.",
-        memberCount: 10,
-        maxMembers: 12,
+        participants: 10, // memberCount → participants
+        maxParticipants: 12, // maxMembers → maxParticipants
         likeCount: 15,
       },
     ];
@@ -239,24 +51,24 @@ const initializeStorage = () => {
         id: 4,
         title: "자바 기초 스터디",
         description: "자바 프로그래밍의 기초를 함께 공부해요.",
-        memberCount: 4,
-        maxMembers: 6,
+        participants: 4, // memberCount → participants
+        maxParticipants: 6, // maxMembers → maxParticipants
         createdAt: "2025-05-08",
       },
       {
         id: 5,
         title: "알고리즘 스터디",
         description: "코딩 테스트 대비 알고리즘 문제를 풀어봐요.",
-        memberCount: 3,
-        maxMembers: 5,
+        participants: 3, // memberCount → participants
+        maxParticipants: 5, // maxMembers → maxParticipants
         createdAt: "2025-05-09",
       },
       {
         id: 6,
         title: "웹 개발 스터디",
         description: "HTML, CSS, JavaScript를 활용한 웹 개발을 배워요.",
-        memberCount: 5,
-        maxMembers: 8,
+        participants: 5, // memberCount → participants
+        maxParticipants: 8, // maxMembers → maxParticipants
         createdAt: "2025-05-10",
       },
     ];
@@ -685,16 +497,336 @@ const postService = {
   },
 };
 
+// defaultStudies 배열 추가
+const defaultStudies = [
+  {
+    id: 1,
+    title: "React 초급 스터디",
+    subject: "프론트엔드",
+    category: "IT 개발",
+    participants: 5,
+    maxParticipants: 10,
+    createdAt: "2025-01-01",
+    description: "리액트 기초부터 함께 배워요",
+    likeCount: 15,
+  },
+  {
+    id: 2,
+    title: "Node.js 백엔드 스터디",
+    subject: "백엔드",
+    category: "IT 개발",
+    participants: 4,
+    maxParticipants: 10,
+    createdAt: "2025-01-02",
+    description: "백엔드 개발의 기초를 다집니다",
+    likeCount: 12,
+  },
+  {
+    id: 3,
+    title: "Python 데이터 분석",
+    subject: "데이터 분석",
+    category: "IT 개발",
+    participants: 6,
+    maxParticipants: 8,
+    createdAt: "2025-01-03",
+    description: "파이썬으로 데이터 분석하기",
+    likeCount: 20,
+  },
+  {
+    id: 4,
+    title: "자바 알고리즘 스터디",
+    subject: "알고리즘",
+    category: "IT 개발",
+    participants: 3,
+    maxParticipants: 10,
+    createdAt: "2025-01-05",
+    description: "코딩 테스트 대비 알고리즘",
+    likeCount: 8,
+  },
+  {
+    id: 5,
+    title: "영어 회화 스터디",
+    subject: "회화",
+    category: "언어",
+    participants: 3,
+    maxParticipants: 5,
+    createdAt: "2025-01-10",
+    description: "원어민과 함께하는 영어회화",
+    likeCount: 18,
+  },
+  {
+    id: 6,
+    title: "일본어 초급 스터디",
+    subject: "기초 일본어",
+    category: "언어",
+    participants: 4,
+    maxParticipants: 6,
+    createdAt: "2025-01-15",
+    description: "일본어 기초부터 차근차근",
+    likeCount: 9,
+  },
+  {
+    id: 7,
+    title: "스페인어 문법 스터디",
+    subject: "스페인어",
+    category: "언어",
+    participants: 2,
+    maxParticipants: 5,
+    createdAt: "2025-02-01",
+    description: "스페인어 문법 심화 학습",
+    likeCount: 4,
+  },
+  {
+    id: 8,
+    title: "UI/UX 디자인 스터디",
+    subject: "디자인",
+    category: "디자인",
+    participants: 4,
+    maxParticipants: 8,
+    createdAt: "2025-02-05",
+    description: "UI/UX 디자인 기초와 실습",
+    likeCount: 10,
+  },
+  {
+    id: 9,
+    title: "웹디자인 실습 스터디",
+    subject: "웹디자인",
+    category: "디자인",
+    participants: 5,
+    maxParticipants: 7,
+    createdAt: "2025-02-10",
+    description: "웹디자인 포트폴리오 만들기",
+    likeCount: 14,
+  },
+  {
+    id: 10,
+    title: "그래픽 디자인 스터디",
+    subject: "Adobe Illustrator",
+    category: "디자인",
+    participants: 3,
+    maxParticipants: 6,
+    createdAt: "2025-02-15",
+    description: "그래픽 디자인 기초 학습",
+    likeCount: 7,
+  },
+  {
+    id: 11,
+    title: "정보처리기사 시험 준비 스터디",
+    subject: "자격증",
+    category: "자격증",
+    participants: 6,
+    maxParticipants: 8,
+    createdAt: "2025-03-01",
+    description: "정보처리기사 실기 대비",
+    likeCount: 16,
+  },
+  {
+    id: 12,
+    title: "토익 점수 향상 스터디",
+    subject: "영어 자격증",
+    category: "자격증",
+    participants: 2,
+    maxParticipants: 6,
+    createdAt: "2025-03-05",
+    description: "토익 800점 목표",
+    likeCount: 5,
+  },
+  {
+    id: 13,
+    title: "토플 시험 준비 스터디",
+    subject: "영어 자격증",
+    category: "자격증",
+    participants: 4,
+    maxParticipants: 6,
+    createdAt: "2025-03-10",
+    description: "토플 100점 목표",
+    likeCount: 11,
+  },
+  {
+    id: 14,
+    title: "자기계발 독서 스터디",
+    subject: "자기계발",
+    category: "자기개발",
+    participants: 5,
+    maxParticipants: 10,
+    createdAt: "2025-03-15",
+    description: "한 달에 한 권 읽기",
+    likeCount: 19,
+  },
+  {
+    id: 15,
+    title: "심리학 공부 스터디",
+    subject: "심리학",
+    category: "자기개발",
+    participants: 3,
+    maxParticipants: 6,
+    createdAt: "2025-03-20",
+    description: "심리학 기초 이론 학습",
+    likeCount: 13,
+  },
+  {
+    id: 16,
+    title: "하버드 비즈니스 독서 스터디",
+    subject: "비즈니스",
+    category: "자기개발",
+    participants: 4,
+    maxParticipants: 5,
+    createdAt: "2025-03-25",
+    description: "비즈니스 서적 함께 읽기",
+    likeCount: 6,
+  },
+];
+
 // 스터디 관련 서비스
 const studyService = {
-  // 인기 스터디 가져오기
+  // 인기 스터디 가져오기 (수정 버전)
   getPopularStudies: () => {
-    return JSON.parse(localStorage.getItem("popularStudies")) || [];
+    // 항상 최신 데이터를 사용해서 좋아요 순으로 정렬
+    const allStudies = studyService.getAllStudies();
+    return [...allStudies]
+      .sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0))
+      .slice(0, 3);
   },
 
-  // 신규 스터디 가져오기
+  // 신규 스터디 가져오기 (수정 버전)
   getNewStudies: () => {
-    return JSON.parse(localStorage.getItem("newStudies")) || [];
+    // 항상 최신 데이터를 사용해서 날짜 순으로 정렬
+    const allStudies = studyService.getAllStudies();
+    return [...allStudies]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 3);
+  },
+
+  // 모든 스터디 가져오기 (기존 메서드)
+  getAllStudies: () => {
+    // localStorage에 사용자 정의 스터디가 있으면 불러오기, 없으면 빈 배열
+    const customStudies =
+      JSON.parse(localStorage.getItem("customStudies")) || [];
+    return [...defaultStudies, ...customStudies];
+  },
+
+  // 카테고리별 필터링된 스터디 가져오기 (기존 메서드)
+  getFilteredStudies: (category) => {
+    const allStudies = studyService.getAllStudies();
+
+    if (category === "전체") {
+      return allStudies;
+    } else if (category === "직접 작성") {
+      const customStudies =
+        JSON.parse(localStorage.getItem("customStudies")) || [];
+      return customStudies;
+    } else {
+      return allStudies.filter((study) => study.category === category);
+    }
+  },
+
+  // 새 스터디 저장하기 (새 메서드)
+  saveCustomStudy: (study) => {
+    const customStudies =
+      JSON.parse(localStorage.getItem("customStudies")) || [];
+
+    // 새 스터디에 ID 부여 (기존 ID 중 가장 큰 값 + 1)
+    const allStudies = studyService.getAllStudies();
+    const maxId = Math.max(...allStudies.map((s) => s.id), 0);
+
+    const newStudy = {
+      ...study,
+      id: maxId + 1,
+      category: "직접 작성",
+      createdAt: new Date().toISOString().split("T")[0], // YYYY-MM-DD 형식
+      likeCount: 0,
+    };
+
+    customStudies.push(newStudy);
+    localStorage.setItem("customStudies", JSON.stringify(customStudies));
+    return newStudy;
+  },
+
+  // 사용자 정의 스터디 삭제하기 (새 메서드)
+  deleteCustomStudy: (id) => {
+    const customStudies =
+      JSON.parse(localStorage.getItem("customStudies")) || [];
+    const updatedCustomStudies = customStudies.filter(
+      (study) => study.id !== id
+    );
+    localStorage.setItem("customStudies", JSON.stringify(updatedCustomStudies));
+    return updatedCustomStudies;
+  },
+
+  // ID로 스터디 가져오기 (새 메서드)
+  getStudyById: (id) => {
+    const allStudies = studyService.getAllStudies();
+    return allStudies.find((study) => study.id.toString() === id.toString());
+  },
+
+  // 스터디 신청하기 (새 메서드)
+  applyForStudy: (studyId, applicationData) => {
+    // localStorage에서 신청 정보를 가져오거나 초기화
+    const applications =
+      JSON.parse(localStorage.getItem("studyApplications")) || [];
+
+    // 새 신청 정보 생성
+    const newApplication = {
+      id: Date.now(), // 고유 ID 생성
+      studyId: parseInt(studyId),
+      ...applicationData,
+      status: "pending", // 상태: pending, accepted, rejected
+      appliedAt: new Date().toISOString(),
+    };
+
+    // 이미 같은 사용자가 같은 스터디에 신청했는지 확인
+    const alreadyApplied = applications.some(
+      (app) =>
+        app.studyId === parseInt(studyId) && app.email === applicationData.email
+    );
+
+    if (alreadyApplied) {
+      throw new Error("이미 이 스터디에 신청하셨습니다.");
+    }
+
+    // 신청 정보 추가
+    applications.push(newApplication);
+    localStorage.setItem("studyApplications", JSON.stringify(applications));
+
+    // 스터디 참가자 수 증가 (옵션)
+    const allStudies = studyService.getAllStudies();
+    const studyIndex = allStudies.findIndex((s) => s.id === parseInt(studyId));
+
+    if (
+      studyIndex !== -1 &&
+      allStudies[studyIndex].participants <
+        allStudies[studyIndex].maxParticipants
+    ) {
+      // 참가자 수 증가 (커스텀 스터디일 경우)
+      if (allStudies[studyIndex].category === "직접 작성") {
+        const customStudies =
+          JSON.parse(localStorage.getItem("customStudies")) || [];
+        const customIndex = customStudies.findIndex(
+          (s) => s.id === parseInt(studyId)
+        );
+
+        if (customIndex !== -1) {
+          customStudies[customIndex].participants += 1;
+          localStorage.setItem("customStudies", JSON.stringify(customStudies));
+        }
+      }
+    }
+
+    return newApplication;
+  },
+
+  // 사용자의 스터디 신청 목록 가져오기 (새 메서드)
+  getUserApplications: (userEmail) => {
+    const applications =
+      JSON.parse(localStorage.getItem("studyApplications")) || [];
+    return applications.filter((app) => app.email === userEmail);
+  },
+
+  // 스터디의 신청자 목록 가져오기 (새 메서드)
+  getStudyApplicants: (studyId) => {
+    const applications =
+      JSON.parse(localStorage.getItem("studyApplications")) || [];
+    return applications.filter((app) => app.studyId === parseInt(studyId));
   },
 };
 

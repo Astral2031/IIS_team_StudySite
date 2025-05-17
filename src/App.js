@@ -4,16 +4,19 @@ import CreatePost from "./pages/CreatePost";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import Home from "./pages/Home";
+import MyStudies from "./pages/MyStudies";
 import PostDetail from "./pages/PostDetail";
 import PostList from "./pages/PostList";
+import PostStudy from "./pages/PostStudy";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SearchResults from "./pages/SearchResults";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import StudyApply from "./pages/StudyApply";
 import StudyList from "./pages/StudyList";
 
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import React from "react";
 
@@ -27,7 +30,8 @@ function App() {
             <Routes>
               {/* 공개 라우트 */}
               <Route path="/" element={<Home />} />
-              <Route path="/list" element={<StudyList />} />
+              <Route path="/study-list" element={<StudyList />} />
+              <Route path="/study-apply/:id" element={<StudyApply />} />
               <Route path="/community/:category" element={<PostList />} />
               <Route path="/community/post/:id" element={<PostDetail />} />
               <Route path="/search" element={<SearchResults />} />
@@ -36,6 +40,22 @@ function App() {
 
               {/* 보호된 라우트 */}
               <Route
+                path="/post-study"
+                element={
+                  <ProtectedRoute>
+                    <PostStudy />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-studies"
+                element={
+                  <ProtectedRoute>
+                    <MyStudies />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/community/create/:category"
                 element={
                   <ProtectedRoute>
@@ -43,6 +63,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* 레거시 라우트 - 리다이렉트 처리 (선택 사항) */}
+              <Route path="/list" element={<StudyList />} />
 
               {/* 404 페이지 */}
               <Route

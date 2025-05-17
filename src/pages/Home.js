@@ -1,11 +1,10 @@
 // src/pages/Home.js
 import { postService, studyService } from "../services/storageService";
 
-//   Carousel 컴포넌트 import 추가
+//      Carousel 컴포넌트 import 추가
 import { Carousel } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-
 
 const Home = () => {
   const [newStudies, setNewStudies] = useState([]);
@@ -97,7 +96,7 @@ const Home = () => {
       <section className="mb-5">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h2>신규 스터디 그룹</h2>
-          <Link to="/list" className="btn btn-outline-primary btn-sm">
+          <Link to="/study-list" className="btn btn-outline-primary btn-sm">
             더 보기
           </Link>
         </div>
@@ -110,14 +109,15 @@ const Home = () => {
                   <p className="card-text">{study.description}</p>
                   <div className="text-muted small mb-2">
                     <span>
-                      인원: {study.memberCount}/{study.maxMembers}
+                      인원: {study.participants || study.memberCount}/
+                      {study.maxParticipants || study.maxMembers}
                     </span>
                     <span className="ms-3">
                       생성일: {formatDate(study.createdAt)}
                     </span>
                   </div>
                   <Link
-                    to={`/study/${study.id}`}
+                    to={`/study-apply/${study.id}`}
                     className="btn btn-sm btn-outline-primary"
                   >
                     상세 보기
@@ -133,7 +133,7 @@ const Home = () => {
       <section className="mb-5">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h2>인기 스터디 그룹</h2>
-          <Link to="/list" className="btn btn-outline-primary btn-sm">
+          <Link to="/study-list" className="btn btn-outline-primary btn-sm">
             더 보기
           </Link>
         </div>
@@ -151,11 +151,12 @@ const Home = () => {
                   <p className="card-text">{study.description}</p>
                   <div className="text-muted small mb-2">
                     <span>
-                      인원: {study.memberCount}/{study.maxMembers}
+                      인원: {study.participants || study.memberCount}/
+                      {study.maxParticipants || study.maxMembers}
                     </span>
                   </div>
                   <Link
-                    to={`/study/${study.id}`}
+                    to={`/study-apply/${study.id}`}
                     className="btn btn-sm btn-outline-primary"
                   >
                     상세 보기
