@@ -53,6 +53,7 @@ function MyStudies() {
                 <p className="card-text">시작일: {study.startDate}</p>
                 <Link
                   to={`/study-apply/${study.id}`}
+                  state={{ canApply: false }}
                   className="btn btn-primary"
                 >
                   상세 보기

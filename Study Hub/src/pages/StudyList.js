@@ -126,6 +126,7 @@ const StudyList = () => {
                       <div className="d-flex gap-2">
                         <Link
                           to={`/study-apply/${study.id}`}
+                          state={{ canApply: true }}
                           className="btn btn-sm btn-primary"
                         >
                           신청하기

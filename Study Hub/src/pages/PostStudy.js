@@ -1,4 +1,3 @@
-// src/pages/PostStudy.js
 import { studyService } from "../services/storageService";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -12,6 +11,7 @@ const PostStudy = () => {
   const [studyData, setStudyData] = useState({
     title: "",
     subject: "",
+    category: "", // 카테고리 추가
     participants: 1,
     maxParticipants: 5,
     description: "",
@@ -74,6 +74,28 @@ const PostStudy = () => {
             required
             style={styles.input}
           />
+        </div>
+
+        {/* 카테고리 선택 */}
+        <div style={styles.formGroup}>
+          <label htmlFor="category" style={styles.label}>
+            카테고리
+          </label>
+          <select
+            id="category"
+            name="category"
+            value={studyData.category}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          >
+            <option value="">카테고리를 선택하세요</option>
+            <option value="IT 개발">IT 개발</option>
+            <option value="언어">언어</option>
+            <option value="디자인">디자인</option>
+            <option value="자격증">자격증</option>
+            <option value="자기개발">자기개발</option>
+          </select>
         </div>
 
         <div style={styles.formGroup}>
