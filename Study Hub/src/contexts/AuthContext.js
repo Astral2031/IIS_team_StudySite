@@ -15,14 +15,15 @@ export const AuthProvider = ({ children }) => {
 
   // 초기 로딩 시 localStorage에서 로그인 정보 확인
   useEffect(() => {
-    const user = localStorage.getItem("currentUser");
-    if (user) {
-      const userData = JSON.parse(user);
-      setCurrentUser(userData);
-      setIsAdmin(authService.isAdmin(userData)); // 관리자 여부 확인
-    }
-    setLoading(false);
-  }, []);
+  const user = localStorage.getItem("currentUser");
+  if (user && user !== "undefined") {  // 여기서 undefined 문자열 체크 추가
+    const userData = JSON.parse(user);
+    setCurrentUser(userData);
+    setIsAdmin(authService.isAdmin(userData));
+  }
+  setLoading(false);
+}, []);
+
 
   // 로그인 함수
   const login = async (userData) => {
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     authService.logout(); // 서비스 계층에 로직 위임
     setCurrentUser(null);
+    localStorage.removeItem("currentUser");
     setIsAdmin(false);
   };
 

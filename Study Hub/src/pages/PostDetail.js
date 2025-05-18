@@ -22,35 +22,36 @@ const PostDetail = () => {
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentContent, setEditCommentContent] = useState("");
 
-  
-  
+
+
 
   // 게시글 데이터 가져오기
- const fetchPost = async () => {
-  try {
-    // id로 게시글 상세 정보 가져오기 (비동기니까 await 필수)
-    const fetchedPost = await postService.getPostById(category,id);
+  const fetchPost = async () => {
+    try {
+      // id로 게시글 상세 정보 가져오기 (비동기니까 await 필수)
+      const fetchedPost = await postService.getPostById(category, id);
+      console.log(fetchedPost.comments);
 
-    if (fetchedPost) {
-      // 조회수 증가 API 호출 (await 필수)
-      await postService.increaseViews(category, id);
+      if (fetchedPost) {
+        // 조회수 증가 API 호출 (await 필수)
+        await postService.increaseViews(category, id);
 
 
 
-      // 상태 업데이트
-      setPost(fetchedPost);
+        // 상태 업데이트
+        setPost(fetchedPost);
 
-      // 좋아요 여부 체크
-      if (currentUser && fetchedPost.likedBy) {
-        setLikeStatus(fetchedPost.likedBy.includes(currentUser.id));
+        // 좋아요 여부 체크
+        if (currentUser && fetchedPost.likedBy) {
+          setLikeStatus(fetchedPost.likedBy.includes(currentUser.id));
+        }
       }
+    } catch (error) {
+      console.error("게시글을 불러오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("게시글을 불러오는 중 오류가 발생했습니다:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -59,70 +60,71 @@ const PostDetail = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, currentUser]);
 
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
 
-    // 로그인 체크
-    if (!isAuthenticated) {
-      const confirmLogin = window.confirm(
-        "댓글을 작성하려면 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?"
-      );
-      if (confirmLogin) {
-        navigate("/signin", { state: { from: `/community/post/${id}` } });
-      }
-      return;
+  // 댓글
+  const handleCommentSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!isAuthenticated) {
+    if (window.confirm("댓글 작성하려면 로그인 필요. 로그인 페이지로 이동할까요?")) {
+      navigate("/signin", { state: { from: `/community/post/${id}` } });
     }
+    return;
+  }
 
-    if (!commentContent.trim()) return;
+  if (!commentContent.trim()) return;
 
-    try {
-      const newComment = {
-        content: commentContent,
-        author: currentUser.name,
-        authorId: currentUser.id,
-        isAnswer: post.isQuestion && !post.hasAnswer, // 질문글이고 답변이 없는 경우 답변으로 설정
-      };
-
-      // 댓글 또는 답변 추가
-      if (newComment.isAnswer) {
-        postService.addAnswer(parseInt(id), newComment);
-      } else {
-        postService.addComment(parseInt(id), newComment);
-      }
-
-      // 게시글 다시 가져오기
-      fetchPost();
-      setCommentContent("");
-    } catch (error) {
-      console.error("댓글 작성 중 오류가 발생했습니다:", error);
-      alert("댓글 작성 중 오류가 발생했습니다.");
-    }
+  const newComment = {
+    content: commentContent,
+    author: currentUser.name,
+    authorId: currentUser.id,
+    isAnswer: post.isQuestion && !post.hasAnswer,
   };
 
-  const handleLike = () => {
-    // 로그인 체크
-    if (!isAuthenticated) {
-      const confirmLogin = window.confirm(
-        "게시글을 추천하려면 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?"
-      );
-      if (confirmLogin) {
-        navigate("/signin", { state: { from: `/community/post/${id}` } });
-      }
-      return;
+  try {
+    if (newComment.isAnswer) {
+      await postService.addAnswer(parseInt(id), newComment);
+    } else {
+      await postService.addComment(category, parseInt(id), newComment);
     }
 
-    try {
-      // 좋아요 토글
-      const updatedPost = postService.likePost(parseInt(id), currentUser.id);
+    await fetchPost(); // ← 반드시 댓글 등록 후 새로고침
+    setCommentContent(""); // 입력창 초기화
+  } catch (error) {
+    console.error("댓글 등록 중 오류:", error);
+    alert("댓글 등록에 실패했습니다.");
+  }
+};
 
-      if (updatedPost) {
-        setPost(updatedPost);
-        setLikeStatus(updatedPost.likedBy.includes(currentUser.id));
-      }
-    } catch (error) {
-      console.error("좋아요 처리 중 오류가 발생했습니다:", error);
+
+
+  // 추천
+const handleLike = async () => {
+  if (!isAuthenticated) {
+    const confirmLogin = window.confirm(
+      "게시글을 추천하려면 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?"
+    );
+
+    
+    if (confirmLogin) {
+      navigate("/signin", { state: { from: `/community/post/${id}` } });
     }
-  };
+    return;
+  }
+
+  try {
+    const updatedPost = await postService.likePost(category, id);
+
+    if (updatedPost) {
+      setPost(updatedPost);
+      setLikeStatus(updatedPost.likedBy?.includes(currentUser.id));
+    }
+  } catch (error) {
+    console.error("좋아요 처리 중 오류가 발생했습니다:", error);
+  }
+};
+
+
 
   // 게시글 수정 모드 진입
   const handleEditPost = () => {
@@ -137,46 +139,49 @@ const PostDetail = () => {
   };
 
   // 게시글 수정 저장
-  const handleSavePost = () => {
+  const handleSavePost = async () => {
     if (!editTitle.trim() || !editContent.trim()) {
       alert("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
     try {
-      // 게시글 수정 (수정: 현재 사용자 객체 전달)
-      const updatedPost = postService.updatePost(parseInt(id), currentUser, {
-        title: editTitle,
-        content: editContent,
-        category: post.category, // 카테고리는 유지
-      });
+      const updatedPost = await postService.updatePost(
+        category,  // ← category 먼저
+        id,   // ← postId
+        {
+          title: editTitle,
+          content: editContent,
+        }
+      );
 
-      setPost(updatedPost);
+      setPost(updatedPost.data);  // axios 응답에서 data 꺼내기
       setIsEditingPost(false);
       alert("게시글이 수정되었습니다.");
     } catch (error) {
       console.error("게시글 수정 중 오류가 발생했습니다:", error);
-      alert(error.message || "게시글 수정에 실패했습니다.");
+      alert(error.response?.data?.error || "게시글 수정에 실패했습니다.");
     }
   };
 
+
   // 게시글 삭제
   const handleDeletePost = async () => {
-  if (!window.confirm("정말 이 게시글을 삭제하시겠습니까?")) {
-    return;
-  }
+    if (!window.confirm("정말 이 게시글을 삭제하시겠습니까?")) {
+      return;
+    }
 
-  try {
-    await postService.deletePost(category, parseInt(id));
-    alert("게시글이 삭제되었습니다.");
+    try {
+      await postService.deletePost(category, parseInt(id));
+      alert("게시글이 삭제되었습니다.");
 
-    // 삭제 후 목록 페이지로 이동
-    navigate(`/community/${category}`);
-  } catch (error) {
-    console.error("게시글 삭제 중 오류가 발생했습니다:", error);
-    alert(error.message || "게시글 삭제에 실패했습니다.");
-  }
-};
+      // 삭제 후 목록 페이지로 이동
+      navigate(`/community/${category}`);
+    } catch (error) {
+      console.error("게시글 삭제 중 오류가 발생했습니다:", error);
+      alert(error.message || "게시글 삭제에 실패했습니다.");
+    }
+  };
 
 
   // 댓글 수정 모드 진입
@@ -192,50 +197,42 @@ const PostDetail = () => {
   };
 
   // 댓글 수정 저장
-  const handleSaveComment = (commentId) => {
-    if (!editCommentContent.trim()) {
-      alert("댓글 내용을 입력해주세요.");
-      return;
-    }
+  const handleSaveComment = async (commentId) => {
+  if (!editCommentContent.trim()) {
+    alert("댓글 내용을 입력해주세요.");
+    return;
+  }
 
-    try {
-      // 댓글 수정
-      postService.updateComment(
-        parseInt(id),
-        commentId,
-        currentUser.id,
-        editCommentContent
-      );
+  try {
+    await postService.updateComment(category, id, commentId, editCommentContent);
+    await fetchPost();  // 수정 후 최신 댓글 다시 불러오기
 
-      // 게시글 다시 가져오기
-      fetchPost();
-      setEditingCommentId(null);
-      setEditCommentContent("");
-      alert("댓글이 수정되었습니다.");
-    } catch (error) {
-      console.error("댓글 수정 중 오류가 발생했습니다:", error);
-      alert(error.message || "댓글 수정에 실패했습니다.");
-    }
-  };
+    setEditingCommentId(null);
+    setEditCommentContent("");
+    alert("댓글이 수정되었습니다.");
+  } catch (error) {
+    console.error("댓글 수정 중 오류:", error);
+    alert("댓글 수정에 실패했습니다.");
+  }
+};
+
+
 
   // 댓글 삭제
-  const handleDeleteComment = (commentId) => {
-    if (!window.confirm("정말 이 댓글을 삭제하시겠습니까?")) {
-      return;
-    }
+  const handleDeleteComment = async (commentId) => {
+  if (!window.confirm("정말 이 댓글을 삭제하시겠습니까?")) return;
 
-    try {
-      // 댓글 삭제
-      postService.deleteComment(parseInt(id), commentId, currentUser.id);
+  try {
+    await postService.deleteComment(category, parseInt(id), commentId);
+    await fetchPost();  // 삭제 후 최신 댓글 목록 다시 불러오기
+    alert("댓글이 삭제되었습니다.");
+  } catch (error) {
+    console.error("댓글 삭제 중 오류:", error);
+    alert("댓글 삭제에 실패했습니다.");
+  }
+};
 
-      // 게시글 다시 가져오기
-      fetchPost();
-      alert("댓글이 삭제되었습니다.");
-    } catch (error) {
-      console.error("댓글 삭제 중 오류가 발생했습니다:", error);
-      alert(error.message || "댓글 삭제에 실패했습니다.");
-    }
-  };
+
 
   // 현재 사용자가 게시글 작성자인지 확인하는 함수
   const isPostAuthor = () => {
@@ -346,24 +343,24 @@ const PostDetail = () => {
               </div>
             ) : (
               <div className="post-content mb-4 white-space-pre-line">
-                {post.content.split("\n").map((line, i) => (
+                {(post.content || "").split("\n").map((line, i) => (
                   <React.Fragment key={i}>
                     {line}
                     <br />
                   </React.Fragment>
                 ))}
+
               </div>
             )}
 
             {!isEditingPost && (
               <div className="d-flex justify-content-end">
                 <button
-                  className={`btn ${
-                    likeStatus ? "btn-danger" : "btn-outline-danger"
-                  }`}
+                  className={`btn ${likeStatus ? "btn-danger" : "btn-outline-danger"
+                    }`}
                   onClick={handleLike}
                 >
-                  ♥ 추천 {post.likeCount}
+                  ♥ 추천 {post.likes}
                 </button>
               </div>
             )}
@@ -383,9 +380,8 @@ const PostDetail = () => {
                 post.comments.map((comment) => (
                   <div
                     key={comment.id}
-                    className={`comment mb-3 ${
-                      comment.isAnswer ? "bg-light p-3" : ""
-                    }`}
+                    className={`comment mb-3 ${comment.isAnswer ? "bg-light p-3" : ""
+                      }`}
                   >
                     <div className="d-flex justify-content-between">
                       <div>

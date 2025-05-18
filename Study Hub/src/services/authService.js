@@ -1,14 +1,14 @@
-import axios from "axios";
+import apiClient from "./apiClient.js";
 
 const authService = {
   login: async (email, password) => {
     try {
-      const response = await axios.post("/api/auth/login", {
-        email,
-        password,
-      });
+      const response = await apiClient.post("/auth/login", { email, password });
+      const userInfo = response.data;
 
-      const userInfo = response.data; // 비밀번호 제외된 사용자 정보
+      // 로그인 성공 시 localStorage에 토큰 포함해서 저장
+      localStorage.setItem("currentUser", JSON.stringify(userInfo));
+
       return userInfo;
     } catch (err) {
       if (err.response && err.response.data.message) {

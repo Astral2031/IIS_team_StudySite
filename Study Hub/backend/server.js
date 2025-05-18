@@ -3,6 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import studyRoutes from "./routes/studyRoutes.js";
 import postsRoutes from "./routes/postsRoutes.js";
+import commentRouter from "./routes/commentsRoutes.js";
 
 const app = express();
 const PORT = 5000;
@@ -12,12 +13,15 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json()); // JSON 파싱 미들웨어
+app.use(express.json());
 
 // 라우트
 app.use("/api/auth", authRoutes);
 app.use("/api/studies", studyRoutes);
 app.use("/api/posts", postsRoutes);
+app.use("/api/posts", commentRouter); 
+
+
 
 // 서버 시작
 app.listen(PORT, () => {

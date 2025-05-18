@@ -1,6 +1,10 @@
 // controllers/authController.js
 import db from "../config/db.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "studyhub";
+
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -58,13 +62,26 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "비밀번호가 틀렸습니다." });
     }
 
-    res.json({
+    // 로그인 성공 후 토큰 발급
+  const token = jwt.sign(
+    {
       id: user.id,
       email: user.email,
       nickname: user.nickname,
       isAdmin: user.is_admin === 1,
-    });
+    },
+    JWT_SECRET,
+    { expiresIn: "1d" } // 토큰 유효기간 1일
+  );
 
+  res.json({
+    token,
+    id: user.id,
+    email: user.email,
+    nickname: user.nickname,
+    isAdmin: user.is_admin === 1,
+  });
+console.log(token);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });

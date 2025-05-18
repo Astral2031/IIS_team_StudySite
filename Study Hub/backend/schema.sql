@@ -117,11 +117,10 @@ CREATE TABLE comments (
 );
 
 
-
 -- 추천 기록
 CREATE TABLE post_likes (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,            -- 추천 기록 고유 ID
-  post_type ENUM('notice', 'free', 'qna') NOT NULL,-- 게시판 종류
+  post_type ENUM('notice', 'freetalk', 'qna') NOT NULL,-- 게시판 종류
   post_id BIGINT NOT NULL,                         -- 추천한 게시글 ID
   user_id INT NOT NULL,                            -- 추천한 사용자 ID
   liked_at DATETIME DEFAULT CURRENT_TIMESTAMP,     -- 추천한 시각
@@ -130,6 +129,7 @@ CREATE TABLE post_likes (
 
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE  -- 사용자 삭제 시 추천 기록도 삭제
 );
+
 
 
 
