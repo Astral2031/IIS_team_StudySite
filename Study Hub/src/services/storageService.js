@@ -679,6 +679,27 @@ const defaultStudies = [
 
 // 스터디 관련 서비스
 const studyService = {
+  // 스터디 검색
+  searchStudies: (query) => {
+    const allStudies = studyService.getAllStudies();
+    const searchTerm = query.toLowerCase();
+
+    const filteredStudies = allStudies.filter(
+      (study) =>
+        study.title.toLowerCase().includes(searchTerm) ||
+        (study.subject && study.subject.toLowerCase().includes(searchTerm)) ||
+        (study.description &&
+          study.description.toLowerCase().includes(searchTerm)) ||
+        (study.category && study.category.toLowerCase().includes(searchTerm))
+    );
+
+    // 최신순 정렬 (생성일 기준)
+    return [...filteredStudies].sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB - dateA; // 최신 스터디가 먼저 오도록 내림차순 정렬
+    });
+  },
   // 인기 스터디 가져오기 (수정 버전)
   getPopularStudies: () => {
     // 항상 최신 데이터를 사용해서 좋아요 순으로 정렬
@@ -888,9 +909,12 @@ const searchService = {
   search: (query) => {
     // 게시글 검색
     const postResults = postService.searchPosts(query);
+    // 스터디 검색 (추가)
+    const studyResults = studyService.searchStudies(query);
 
     return {
       posts: postResults,
+      studies: studyResults,
       // 필요한 경우 다른 검색 결과 추가
     };
   },
