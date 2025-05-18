@@ -1,5 +1,5 @@
 import express from "express";
-import { createPost, getPosts, increaseViews, getPostById, getPopularPosts } from "../controllers/postsController.js";
+import { createPost, getPosts, increaseViews, getPostById, getPopularPosts, deletePost } from "../controllers/postsController.js";
 
 
 
@@ -10,5 +10,6 @@ router.get('/popular', getPopularPosts);
 router.get("/:category", getPosts);
 router.post("/:category/:postId/increase-views", increaseViews);
 router.get("/:category/:postId", getPostById);
+router.delete("/:category/:postId", deletePost);
 
 export default router;

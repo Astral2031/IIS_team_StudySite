@@ -152,4 +152,38 @@ export async function getPopularPosts(req, res) {
     res.status(500).json({ message: '서버 에러 발생' });
   }
 };
+export const deletePost = async (req, res) => {
+  const { category, postId } = req.params;
+
+  let tableName;
+  switch (category) {
+    case 'notice':
+      tableName = 'notice_posts';
+      break;
+    case 'freetalk':
+      tableName = 'free_posts';
+      break;
+    case 'qna':
+      tableName = 'qna_posts';
+      break;
+    default:
+      return res.status(400).json({ error: '잘못된 카테고리입니다.' });
+  }
+  try {
+    const [result] = await db.query(
+      `DELETE FROM ${tableName} WHERE id = ?`,
+      [postId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: '삭제할 게시글을 찾을 수 없습니다.' });
+    }
+
+    res.json({ message: '게시글 삭제 완료' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: '게시글 삭제 실패' });
+  }
+};
+
 

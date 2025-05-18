@@ -161,31 +161,23 @@ const PostDetail = () => {
   };
 
   // 게시글 삭제
-  const handleDeletePost = () => {
-    if (!window.confirm("정말 이 게시글을 삭제하시겠습니까?")) {
-      return;
-    }
+  const handleDeletePost = async () => {
+  if (!window.confirm("정말 이 게시글을 삭제하시겠습니까?")) {
+    return;
+  }
 
-    try {
-      // 게시글 삭제 (수정: 현재 사용자 객체 전달)
-      postService.deletePost(parseInt(id), currentUser);
-      alert("게시글이 삭제되었습니다.");
+  try {
+    await postService.deletePost(category, parseInt(id));
+    alert("게시글이 삭제되었습니다.");
 
-      // 삭제 후 목록 페이지로 이동
-      navigate(
-        `/community/${
-          post.category === "notice"
-            ? "notice"
-            : post.category === "freetalk"
-            ? "freetalk"
-            : "qna"
-        }`
-      );
-    } catch (error) {
-      console.error("게시글 삭제 중 오류가 발생했습니다:", error);
-      alert(error.message || "게시글 삭제에 실패했습니다.");
-    }
-  };
+    // 삭제 후 목록 페이지로 이동
+    navigate(`/community/${category}`);
+  } catch (error) {
+    console.error("게시글 삭제 중 오류가 발생했습니다:", error);
+    alert(error.message || "게시글 삭제에 실패했습니다.");
+  }
+};
+
 
   // 댓글 수정 모드 진입
   const handleEditComment = (comment) => {

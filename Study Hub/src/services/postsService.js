@@ -39,6 +39,14 @@ export const postService = {
       throw new Error(err.response?.data?.error || "조회수 증가 실패");
     }
   },
+  deletePost: async (category, id) => {
+    try {
+      const res = await axios.delete(`${API}/${category}/${id}`);
+      return res.data; // { message: "게시물이 삭제되었습니다." }
+    } catch (err) {
+      throw new Error(err.response?.data?.error || "게시글 삭제 실패");
+    }
+  },
 };
 
 
