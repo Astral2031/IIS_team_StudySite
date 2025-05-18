@@ -1,5 +1,5 @@
 // src/pages/SearchResults.js - 오류 수정 버전
-import { searchService } from "../services/storageService";
+import { searchService } from "../services/storageService.js";
 
 import { Link, useSearchParams } from "react-router-dom";
 import React, { useState, useEffect } from "react";

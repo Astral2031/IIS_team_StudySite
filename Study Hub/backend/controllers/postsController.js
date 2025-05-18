@@ -1,4 +1,4 @@
-import db from "../config/db.js";
+import db, { query } from "../config/db.js";
 
 export const createPost = async (req, res) => {
   const { category } = req.params;
@@ -134,5 +134,22 @@ export const getPostById = async (req, res) => {
     return res.status(500).json({ error: "게시글 조회 실패" });
   }
 };
-
+export async function getPopularPosts(req, res) {
+  try {
+    const sql = `
+      SELECT id, title, views, author_id, created_at, 'notice' AS category FROM notice_posts
+      UNION ALL
+      SELECT id, title, views, author_id, created_at, 'freetalk' AS category FROM free_posts
+      UNION ALL
+      SELECT id, title, views, author_id, created_at, 'qna' AS category FROM qna_posts
+      ORDER BY views DESC
+      LIMIT 20;
+    `;
+    const posts = await query(sql);
+    res.json(posts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: '서버 에러 발생' });
+  }
+};
 

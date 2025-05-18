@@ -1,6 +1,6 @@
 // src/pages/StudyList.js
-import { studyService } from "../services/storageService";
-import { useAuth } from "../contexts/AuthContext";
+import { studyService } from "../services/storageService.js";
+import { useAuth } from "../contexts/AuthContext.js";
 
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";

@@ -1,6 +1,5 @@
-// src/pages/CreatePost.js
-import { postService } from "../services/storageService";
-import { useAuth } from "../contexts/AuthContext";
+import { postService } from "../services/postsService.js";
+import { useAuth } from "../contexts/AuthContext.js";
 
 import { Link, useParams, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
@@ -8,14 +7,13 @@ import React, { useState, useEffect } from "react";
 const CreatePost = () => {
   const { category } = useParams();
   const navigate = useNavigate();
-  const { currentUser, isAuthenticated, isAdmin } = useAuth(); // isAdmin 추가
+  const { currentUser, isAuthenticated, isAdmin } = useAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
-  const [categoryError, setCategoryError] = useState(""); // 카테고리 에러 메시지
+  const [categoryError, setCategoryError] = useState("");
 
-  // 카테고리 한글화
   const getCategoryTitle = () => {
     switch (category) {
       case "notice":
@@ -29,16 +27,13 @@ const CreatePost = () => {
     }
   };
 
-  // 관리자 권한 체크 - 공지사항 작성 제한
   useEffect(() => {
-    // 공지사항 카테고리인데 관리자가 아니면 오류 표시
     if (category === "notice" && !isAdmin) {
       setCategoryError("공지사항은 관리자만 작성할 수 있습니다.");
     } else {
       setCategoryError("");
     }
 
-    // 로그인 체크
     if (!isAuthenticated) {
       navigate("/signin", { state: { from: `/community/create/${category}` } });
     }
@@ -47,7 +42,6 @@ const CreatePost = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 공지사항 권한 체크
     if (category === "notice" && !isAdmin) {
       alert("공지사항은 관리자만 작성할 수 있습니다.");
       return;
@@ -64,17 +58,16 @@ const CreatePost = () => {
       const postData = {
         title,
         content,
-        author: currentUser.name,
-        category: category,
+        author_id: currentUser.id,
+        category,
         isQuestion: category === "qna",
         hasAnswer: false,
       };
 
-      // 현재 사용자 정보 함께 전달
-      postService.createPost(postData, currentUser);
+      await postService.createPost(postData);
       navigate(`/community/${category}`);
     } catch (error) {
-      console.error("게시글 작성 중 오류가 발생했습니다:", error);
+      console.error("게시글 작성 오류:", error);
       alert(error.message || "게시글 작성 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -86,7 +79,6 @@ const CreatePost = () => {
       <div className="col-12">
         <h2>{getCategoryTitle()} 글 작성</h2>
 
-        {/* 공지사항 관리자 권한 경고 */}
         {categoryError && (
           <div className="alert alert-danger" role="alert">
             {categoryError}
@@ -95,9 +87,7 @@ const CreatePost = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label htmlFor="title" className="form-label">
-              제목
-            </label>
+            <label htmlFor="title" className="form-label">제목</label>
             <input
               type="text"
               className="form-control"
@@ -105,14 +95,12 @@ const CreatePost = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              disabled={categoryError} // 권한 없으면 입력 비활성화
+              disabled={Boolean(categoryError)}  // Boolean 변환
             />
           </div>
 
           <div className="mb-3">
-            <label htmlFor="content" className="form-label">
-              내용
-            </label>
+            <label htmlFor="content" className="form-label">내용</label>
             <textarea
               className="form-control"
               id="content"
@@ -120,7 +108,7 @@ const CreatePost = () => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
-              disabled={categoryError} // 권한 없으면 입력 비활성화
+              disabled={Boolean(categoryError)}  // Boolean 변환
             />
           </div>
 
@@ -128,7 +116,7 @@ const CreatePost = () => {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={loading || categoryError} // 권한 없으면 버튼 비활성화
+              disabled={loading || Boolean(categoryError)}
             >
               {loading ? (
                 <>
@@ -136,19 +124,14 @@ const CreatePost = () => {
                     className="spinner-border spinner-border-sm"
                     role="status"
                     aria-hidden="true"
-                  ></span>
+                  />
                   <span className="ms-2">처리 중...</span>
                 </>
               ) : (
                 "등록"
               )}
             </button>
-            <Link
-              to={`/community/${category}`}
-              className="btn btn-secondary ms-2"
-            >
-              취소
-            </Link>
+            <Link to={`/community/${category}`} className="btn btn-secondary ms-2">취소</Link>
           </div>
         </form>
       </div>

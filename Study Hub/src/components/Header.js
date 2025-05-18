@@ -1,4 +1,4 @@
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext.js";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 
@@ -107,7 +107,7 @@ const Header = () => {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                {currentUser?.name}
+                {currentUser?.nickname}
                 {isAdmin && (
                   <span className="badge bg-danger ms-1">관리자</span>
                 )}

@@ -1,5 +1,5 @@
 // src/pages/SignIn.js
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext.js";
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import React, { useState } from "react";
@@ -19,16 +19,12 @@ const SignIn = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
 
     try {
-      await login(email, password);
-      navigate(from, { replace: true });
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
+      await login({ email, password }); // email, password는 상태
+      navigate("/"); // 로그인 성공 후 이동
+    } catch (err) {
+      alert(err.message);
     }
   };
 

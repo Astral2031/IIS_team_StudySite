@@ -1,5 +1,5 @@
-import { studyService } from "../services/storageService";
-import { useAuth } from "../contexts/AuthContext";
+import { studyService } from "../services/storageService.js";
+import { useAuth } from "../contexts/AuthContext.js";
 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";

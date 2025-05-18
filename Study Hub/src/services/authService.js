@@ -22,7 +22,7 @@ const authService = {
     localStorage.removeItem("currentUser");
   },
   isAdmin: (user) => {
-    return user?.email === "admin@example.com";  // 예시: 이메일 기준 관리자 판별
+    return user?.isAdmin === true;
   },
 };
 

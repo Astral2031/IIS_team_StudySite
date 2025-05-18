@@ -1,5 +1,5 @@
 // src/pages/Home.js
-import { postService, studyService } from "../services/storageService";
+import { postService, studyService } from "../services/storageService.js";
 
 //      Carousel 컴포넌트 import 추가
 import { Carousel } from "react-bootstrap";

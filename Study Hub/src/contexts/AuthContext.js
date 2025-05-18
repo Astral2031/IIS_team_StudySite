@@ -1,5 +1,6 @@
 // src/contexts/AuthContext.js
-import { authService } from "../services/storageService";
+import { authService } from "../services/authService.js"
+import axios from "axios";
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 
@@ -24,36 +25,45 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // 로그인 함수
-  const login = async (email, password) => {
-    const user = authService.login(email, password);
+  const login = async (userData) => {
+  try {
+    const newUser = await authService.login(userData.email, userData.password);
+    setCurrentUser(newUser);
+    setIsAdmin(authService.isAdmin(newUser));
+    localStorage.setItem("currentUser", JSON.stringify(newUser));
+    return newUser;
+  } catch (error) {
+    throw error;
+  }
+};
 
-    if (user) {
-      setCurrentUser(user);
-      setIsAdmin(authService.isAdmin(user)); // 관리자 여부 확인
-      localStorage.setItem("currentUser", JSON.stringify(user));
-      return user;
-    }
-
-    throw new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
-  };
 
   // 로그아웃 함수
   const logout = () => {
+    authService.logout(); // 서비스 계층에 로직 위임
     setCurrentUser(null);
-    setIsAdmin(false); // 관리자 상태 초기화
-    localStorage.removeItem("currentUser");
+    setIsAdmin(false);
   };
 
   // 회원가입 함수
   const register = async (userData) => {
     try {
-      const newUser = authService.register(userData);
+      // 백엔드에 POST 요청 (비동기)
+      const response = await axios.post("/api/auth/register", userData);
+      const newUser = response.data;  // 서버에서 온 사용자 정보
+
       setCurrentUser(newUser);
       setIsAdmin(false); // 일반 회원가입은 항상 일반 사용자
       localStorage.setItem("currentUser", JSON.stringify(newUser));
+
       return newUser;
     } catch (error) {
-      throw error;
+      // 에러 메시지 서버에서 받아서 던지기 or 커스텀 메시지
+      if (error.response && error.response.data && error.response.data.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error("회원가입 중 오류가 발생했습니다.");
+      }
     }
   };
 

@@ -1,7 +1,7 @@
 // src/pages/PostList.js
-import { postService } from "../services/storageService";
-import { useAuth } from "../contexts/AuthContext";
-import CommunityNav from "../components/CommunityNav";
+import { postService } from "../services/postsService.js";
+import { useAuth } from "../contexts/AuthContext.js";
+import CommunityNav from "../components/CommunityNav.js";
 
 import { Link, useParams } from "react-router-dom";
 import React, { useState, useEffect } from "react";
@@ -19,37 +19,38 @@ const PostList = () => {
 
   // src/pages/PostList.js의 useEffect 부분 수정
   useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try {
-        let data;
-        if (category === "popular") {
-          data = postService.getPopularPosts();
-        } else {
-          const serverCategory =
-            category === "notice"
-              ? "notice"
-              : category === "freetalk"
-              ? "freetalk"
-              : "qna";
-          data = postService.getPostsByCategory(serverCategory);
-        }
+  const fetchPosts = async () => {
+    setLoading(true);
+    try {
+      // 유효한 카테고리 배열 선언
+      const validCategories = ["notice", "freetalk", "qna"];
 
-        // 최신순으로 강제 정렬 (ID가 큰 순서로 정렬)
-        const sortedByIdDesc = [...data].sort((a, b) => b.id - a.id);
+      // category가 validCategories 안에 있으면 그대로 쓰고, 아니면 "qna"로 기본값 설정
+      const serverCategory = validCategories.includes(category) ? category : "qna";
 
-        setPosts(sortedByIdDesc);
-        setFilteredPosts(sortedByIdDesc);
-        setCurrentPage(1); // 카테고리 변경 시 첫 페이지로 이동
-      } catch (error) {
-        console.error("게시글을 불러오는 중 오류가 발생했습니다:", error);
-      } finally {
-        setLoading(false);
+      let data;
+      if (category === "popular") {
+        data = await postService.getPopularPosts();
+      } else {
+        data = await postService.getPosts(serverCategory);
       }
-    };
 
-    fetchPosts();
-  }, [category]);
+      // 최신순 정렬
+      const sortedByIdDesc = [...data].sort((a, b) => b.views - a.views);
+
+      setPosts(sortedByIdDesc);
+      setFilteredPosts(sortedByIdDesc);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("게시글을 불러오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPosts();
+}, [category]);
+
 
   // 검색 기능
   const handleSearch = (e) => {
@@ -130,36 +131,35 @@ const PostList = () => {
               </thead>
               <tbody>
                 {currentPosts.length > 0 ? (
-                  currentPosts.map((post) => (
-                    <tr key={post.id}>
-                      <td>{post.id}</td>
-                      <td>
-                        <Link to={`/community/post/${post.id}`}>
-                          {post.title}
-                          {post.comments && post.comments.length > 0 && (
-                            <span className="text-muted ms-1">
-                              [{post.comments.length}]
-                            </span>
-                          )}
-                          {post.isQuestion && post.hasAnswer && (
-                            <span className="badge bg-success ms-1">
-                              답변완료
-                            </span>
-                          )}
-                        </Link>
-                      </td>
-                      <td>{post.author}</td>
-                      <td>{post.createdAt}</td>
-                      <td>{post.viewCount}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="text-center">
-                      게시글이 없습니다.
-                    </td>
-                  </tr>
-                )}
+  currentPosts.map((post, index) => (
+    <tr key={`${post.category}-${post.id}`}>
+      <td>{indexOfFirstPost + index + 1}</td>
+      <td>
+        <Link to={`/community/${post.category}/post/${post.id}`}>
+          {post.title}
+          {post.comments && post.comments.length > 0 && (
+            <span className="text-muted ms-1">
+              [{post.comments.length}]
+            </span>
+          )}
+          {post.isQuestion && post.hasAnswer && (
+            <span className="badge bg-success ms-1">
+              답변완료
+            </span>
+          )}
+        </Link>
+      </td>
+      <td>{post.author}</td>
+      <td>{new Date(post.created_at).toLocaleDateString()}</td>
+      <td>{post.views}</td>
+    </tr>
+  ))
+) : (
+  <tr>
+    <td colSpan="5" className="text-center">게시글이 없습니다.</td>
+  </tr>
+)}
+
               </tbody>
             </table>
 
@@ -170,9 +170,8 @@ const PostList = () => {
                   <ul className="pagination">
                     {/* 이전 버튼 */}
                     <li
-                      className={`page-item ${
-                        currentPage === 1 ? "disabled" : ""
-                      }`}
+                      className={`page-item ${currentPage === 1 ? "disabled" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -187,9 +186,8 @@ const PostList = () => {
                     {Array.from({ length: totalPages }, (_, i) => (
                       <li
                         key={i + 1}
-                        className={`page-item ${
-                          currentPage === i + 1 ? "active" : ""
-                        }`}
+                        className={`page-item ${currentPage === i + 1 ? "active" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -202,9 +200,8 @@ const PostList = () => {
 
                     {/* 다음 버튼 */}
                     <li
-                      className={`page-item ${
-                        currentPage === totalPages ? "disabled" : ""
-                      }`}
+                      className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                        }`}
                     >
                       <button
                         className="page-link"

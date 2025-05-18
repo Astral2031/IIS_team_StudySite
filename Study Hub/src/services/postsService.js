@@ -24,9 +24,14 @@ export const postService = {
     }
   },
   getPostById: async (category, id) => {
-  return axios.get(`${API}/${category}/${id}`).then(res => res.data);
-},
-increaseViews: async (category, id) => {
+    return axios.get(`${API}/${category}/${id}`).then(res => res.data);
+  },
+  getPopularPosts: async () => {
+    const res = await fetch(`${API}/popular`);
+    if (!res.ok) throw new Error("Failed to fetch popular posts");
+    return res.json();
+  },
+  increaseViews: async (category, id) => {
     try {
       const res = await axios.post(`${API}/${category}/${id}/increase-views`);
       return res.data;

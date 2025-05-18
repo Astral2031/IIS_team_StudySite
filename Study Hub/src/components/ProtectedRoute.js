@@ -1,5 +1,5 @@
 // src/components/ProtectedRoute.js
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext.js";
 
 import { Navigate, useLocation } from "react-router-dom";
 import React from "react";

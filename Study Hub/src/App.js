@@ -1,21 +1,21 @@
-import { AuthProvider } from "./contexts/AuthContext";
-import CreatePost from "./pages/CreatePost";
-import Footer from "./components/Footer";
-import Header from "./components/Header";
-import Home from "./pages/Home";
-import MyStudies from "./pages/MyStudies";
-import PostDetail from "./pages/PostDetail";
-import PostList from "./pages/PostList";
-import PostStudy from "./pages/PostStudy";
-import ProtectedRoute from "./components/ProtectedRoute";
-import SearchResults from "./pages/SearchResults";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
-import StudyApply from "./pages/StudyApply";
-import StudyList from "./pages/StudyList";
-import ProfileSettingsPage from "./pages/ProfileSettingsPage";
-import CommunityPage from "./pages/CommunityPage";
-import StudyManagementPage from "./pages/StudyManagementPage";
+import { AuthProvider } from "./contexts/AuthContext.js";
+import CreatePost from "./pages/CreatePost.js";
+import Footer from "./components/Footer.js";
+import Header from "./components/Header.js";
+import Home from "./pages/Home.js";
+import MyStudies from "./pages/MyStudies.js";
+import PostDetail from "./pages/PostDetail.js";
+import PostList from "./pages/PostList.js";
+import PostStudy from "./pages/PostStudy.js";
+import ProtectedRoute from "./components/ProtectedRoute.js";
+import SearchResults from "./pages/SearchResults.js";
+import SignIn from "./pages/SignIn.js";
+import SignUp from "./pages/SignUp.js";
+import StudyApply from "./pages/StudyApply.js";
+import StudyList from "./pages/StudyList.js";
+import ProfileSettingsPage from "./pages/ProfileSettingsPage.js";
+import CommunityPage from "./pages/CommunityPage.js";
+import StudyManagementPage from "./pages/StudyManagementPage.js";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -35,7 +35,7 @@ function App() {
               <Route path="/study-list" element={<StudyList />} />
               <Route path="/study-apply/:id" element={<StudyApply />} />
               <Route path="/community/:category" element={<PostList />} />
-              <Route path="/community/post/:id" element={<PostDetail />} />
+              <Route path="/community/:category/post/:id" element={<PostDetail />} />
               <Route path="/search" element={<SearchResults />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />

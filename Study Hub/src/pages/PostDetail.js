@@ -1,12 +1,12 @@
 // src/pages/PostDetail.js
-import { postService } from "../services/storageService";
-import { useAuth } from "../contexts/AuthContext";
+import { postService } from "../services/postsService.js";
+import { useAuth } from "../contexts/AuthContext.js";
 
 import { Link, useParams, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 
 const PostDetail = () => {
-  const { id } = useParams();
+  const { category, id } = useParams();
   const { currentUser, isAuthenticated, isAdmin } = useAuth(); // isAdmin 추가
   const navigate = useNavigate();
 
@@ -22,28 +22,36 @@ const PostDetail = () => {
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentContent, setEditCommentContent] = useState("");
 
+  
+  
+
   // 게시글 데이터 가져오기
-  const fetchPost = async () => {
-    try {
-      const fetchedPost = postService.getPostById(parseInt(id));
+ const fetchPost = async () => {
+  try {
+    // id로 게시글 상세 정보 가져오기 (비동기니까 await 필수)
+    const fetchedPost = await postService.getPostById(category,id);
 
-      if (fetchedPost) {
-        // 조회수 증가
-        postService.increaseViewCount(parseInt(id));
+    if (fetchedPost) {
+      // 조회수 증가 API 호출 (await 필수)
+      await postService.increaseViews(category, id);
 
-        setPost(fetchedPost);
 
-        // 좋아요 상태 확인
-        if (currentUser && fetchedPost.likedBy) {
-          setLikeStatus(fetchedPost.likedBy.includes(currentUser.id));
-        }
+
+      // 상태 업데이트
+      setPost(fetchedPost);
+
+      // 좋아요 여부 체크
+      if (currentUser && fetchedPost.likedBy) {
+        setLikeStatus(fetchedPost.likedBy.includes(currentUser.id));
       }
-    } catch (error) {
-      console.error("게시글을 불러오는 중 오류가 발생했습니다:", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("게시글을 불러오는 중 오류가 발생했습니다:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     setLoading(true);
@@ -276,13 +284,7 @@ const PostDetail = () => {
       <div className="col-12">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Link
-            to={`/community/${
-              post.category === "notice"
-                ? "notice"
-                : post.category === "freetalk"
-                ? "freetalk"
-                : "qna"
-            }`}
+            to={`/community/${category}`}
             className="btn btn-outline-secondary"
           >
             목록으로

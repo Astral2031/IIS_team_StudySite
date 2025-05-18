@@ -36,31 +36,33 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  // 필수값 체크
   if (!email || !password) {
     return res.status(400).json({ message: "모든 필드를 입력하세요." });
   }
 
   try {
-    // 이메일로 사용자 조회
-    const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [users] = await db.query(
+      "SELECT id, email, password, nickname, is_admin FROM users WHERE email = ?",
+      [email]
+    );
+
     if (users.length === 0) {
       return res.status(400).json({ message: "등록되지 않은 이메일입니다." });
     }
 
     const user = users[0];
 
-    // 비밀번호 비교
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return res.status(400).json({ message: "비밀번호가 틀렸습니다." });
     }
 
-    // 로그인 성공: 사용자 정보 리턴 (비밀번호 제외)
     res.json({
       id: user.id,
       email: user.email,
       nickname: user.nickname,
+      isAdmin: user.is_admin === 1,
     });
 
   } catch (error) {
@@ -68,3 +70,4 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
+
