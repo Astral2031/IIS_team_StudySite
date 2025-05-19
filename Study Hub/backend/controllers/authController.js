@@ -91,7 +91,6 @@ export const login = async (req, res) => {
     nickname: user.nickname,
     isAdmin: user.is_admin === 1,
   });
-console.log(token);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
