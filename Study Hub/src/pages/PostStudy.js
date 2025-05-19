@@ -1,20 +1,21 @@
-import { studyService } from "../services/storageService.js";
+import { studyService } from "../services/studyService.js";
 import { useAuth } from "../contexts/AuthContext.js";
 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const PostStudy = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, currentUser } = useAuth();  // currentUser 추가
   const navigate = useNavigate();
 
+  // 초기 상태에 subject, participants, maxParticipants 추가
   const [studyData, setStudyData] = useState({
     title: "",
     subject: "",
-    category: "", // 카테고리 추가
-    participants: 1,
-    maxParticipants: 5,
     description: "",
+    category: "",
+    participants: 1,       // 현재 인원
+    maxParticipants: 5,    // 최대 인원
   });
 
   const handleChange = (e) => {
@@ -23,12 +24,12 @@ const PostStudy = () => {
       ...prev,
       [name]:
         name === "participants" || name === "maxParticipants"
-          ? parseInt(value, 10)
+          ? parseInt(value, 10) || 0
           : value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!isAuthenticated) {
@@ -36,9 +37,27 @@ const PostStudy = () => {
       return;
     }
 
-    // 스터디 저장
-    studyService.saveCustomStudy(studyData);
-    navigate("/study-list");
+    // 서버에서 host_id를 못 넣어준다면 여기서 넣기
+    const payload = {
+      title: studyData.title,
+      subject: studyData.subject,  
+      description: studyData.description,
+      category: studyData.category,
+      current_members: studyData.participants,
+      max_members: studyData.maxParticipants,
+      host_id: currentUser?.id,   // 로그인한 사용자 ID 넣기
+    };
+console.log("서버에 보내는 payload:", payload);
+
+    try {
+
+      await studyService.saveCustomStudy(payload);
+      alert("스터디가 성공적으로 등록되었습니다.");
+      navigate("/study-list");
+    } catch (error) {
+      console.error("스터디 저장 실패:", error);
+      alert("스터디 등록 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -46,6 +65,7 @@ const PostStudy = () => {
       <h1 style={styles.title}>📝 스터디 모집 글 작성</h1>
 
       <form onSubmit={handleSubmit} style={styles.form}>
+        {/* 스터디 제목 */}
         <div style={styles.formGroup}>
           <label htmlFor="title" style={styles.label}>
             스터디 제목
@@ -61,6 +81,7 @@ const PostStudy = () => {
           />
         </div>
 
+        {/* 주제 */}
         <div style={styles.formGroup}>
           <label htmlFor="subject" style={styles.label}>
             주제
@@ -76,7 +97,7 @@ const PostStudy = () => {
           />
         </div>
 
-        {/* 카테고리 선택 */}
+        {/* 카테고리 */}
         <div style={styles.formGroup}>
           <label htmlFor="category" style={styles.label}>
             카테고리
@@ -98,6 +119,7 @@ const PostStudy = () => {
           </select>
         </div>
 
+        {/* 설명 */}
         <div style={styles.formGroup}>
           <label htmlFor="description" style={styles.label}>
             설명
@@ -112,6 +134,7 @@ const PostStudy = () => {
           />
         </div>
 
+        {/* 인원수 */}
         <div style={styles.formRow}>
           <div style={styles.formGroup}>
             <label htmlFor="participants" style={styles.label}>

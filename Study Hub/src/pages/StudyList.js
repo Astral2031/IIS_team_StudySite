@@ -1,42 +1,44 @@
 // src/pages/StudyList.js
-import { studyService } from "../services/storageService.js";
+import { studyService } from "../services/studyService.js";
 import { useAuth } from "../contexts/AuthContext.js";
 
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+
 const StudyList = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, currentUser } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [currentPage, setCurrentPage] = useState(1);
   const studiesPerPage = 5;
   const [filteredStudies, setFilteredStudies] = useState([]);
 
   useEffect(() => {
-    // studyService를 사용하여 데이터 로드
-    const studiesData = studyService.getFilteredStudies(selectedCategory);
+  const fetchStudies = async () => {
+    const studiesData = await studyService.getFilteredStudies(selectedCategory);
 
-    // 최신순으로 정렬 (createdAt 기준)
     const sortedStudies = [...studiesData].sort((a, b) => {
-      // createdAt이 없는 경우를 대비해 기본값 설정
       const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
       const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-      return dateB - dateA; // 내림차순 정렬 (최신순)
+      return dateB - dateA;
     });
 
     setFilteredStudies(sortedStudies);
-  }, [selectedCategory]);
+  };
 
-  const handleDelete = (id, e) => {
-    e.preventDefault(); // 이벤트 전파 방지
-    e.stopPropagation(); // 클릭 이벤트가 상위로 전파되는 것을 방지
+  fetchStudies();
+}, [selectedCategory]);
 
-    if (window.confirm("정말로 이 스터디를 삭제하시겠습니까?")) {
-      studyService.deleteCustomStudy(id);
-      // 삭제 후 리스트 다시 로드
-      const updatedStudies = studyService.getFilteredStudies(selectedCategory);
 
-      // 최신순으로 정렬
+  const handleDelete = async (id, e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (window.confirm("정말로 이 스터디를 삭제하시겠습니까?")) {
+    try {
+      await studyService.deleteCustomStudy(id);
+
+      const updatedStudies = await studyService.getFilteredStudies(selectedCategory);
       const sortedStudies = [...updatedStudies].sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
         const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
@@ -45,14 +47,18 @@ const StudyList = () => {
 
       setFilteredStudies(sortedStudies);
 
-      const totalPagesAfterDelete = Math.ceil(
-        updatedStudies.length / studiesPerPage
-      );
+      const totalPagesAfterDelete = Math.ceil(updatedStudies.length / studiesPerPage);
       if (currentPage > totalPagesAfterDelete) {
         setCurrentPage(1);
       }
+
+    } catch (error) {
+      console.error("스터디 삭제 중 오류 발생:", error);
+      alert("스터디 삭제 중 오류가 발생했습니다.");
     }
-  };
+  }
+};
+
 
   // 페이지네이션 계산
   const indexOfLastStudy = currentPage * studiesPerPage;
@@ -109,17 +115,13 @@ const StudyList = () => {
                 {currentStudies.map((study) => (
                   <tr key={study.id}>
                     <td>
-                      <Link
-                        to={`/study-apply/${study.id}`}
-                        className="text-decoration-none"
-                      >
+                      <Link to={`/study-apply/${study.id}`} className="text-decoration-none">
                         {study.title}
                       </Link>
                     </td>
                     <td>{study.subject}</td>
                     <td>
-                      {study.participants || study.memberCount}/
-                      {study.maxParticipants || study.maxMembers}
+                      {study.current_members || 0} / {study.max_members || 0}
                     </td>
                     <td>{study.category}</td>
                     <td>
@@ -131,7 +133,7 @@ const StudyList = () => {
                         >
                           신청하기
                         </Link>
-                        {study.category === "직접 작성" && (
+                        {currentUser && study.host_id === currentUser.id && (
                           <button
                             onClick={(e) => handleDelete(study.id, e)}
                             className="btn btn-sm btn-danger"
@@ -143,6 +145,7 @@ const StudyList = () => {
                     </td>
                   </tr>
                 ))}
+
               </tbody>
             </table>
           ) : (

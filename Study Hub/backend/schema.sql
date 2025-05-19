@@ -16,13 +16,10 @@ CREATE TABLE studies (
   id              BIGINT AUTO_INCREMENT PRIMARY KEY,          -- 스터디 ID
   title           VARCHAR(255) NOT NULL,                      -- 제목
   description     TEXT NOT NULL,                              -- 설명
-  qualifications  TEXT,                                       -- 지원 자격
+  subject         VARCHAR(255) NOT NULL,                      -- 주제
   max_members     INT NOT NULL,                               -- 모집 인원
   current_members INT DEFAULT 1,                              -- 현재 인원 (옵션)
   category        VARCHAR(100) NOT NULL,                      -- 카테고리 (문자열로 우선 처리)
-  tags            VARCHAR(255),                               -- 태그 문자열 (쉼표 구분 등)
-  mode            ENUM('online', 'offline', 'hybrid') NOT NULL, -- 진행 방식(온라인, 오프라인, 병행행)
-  deadline        DATETIME,                                   -- 모집 마감일
   created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,         -- 생성일
   updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 수정일
   host_id         INT NOT NULL,                               -- 작성자 (users 테이블 참조)
