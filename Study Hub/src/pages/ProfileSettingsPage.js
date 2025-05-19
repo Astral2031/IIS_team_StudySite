@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { authService } from '../services/authService.js';
 
 function ProfileSettingsPage() {
     const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -26,25 +27,40 @@ function ProfileSettingsPage() {
         setShowProfileForm(!showProfileForm);
     };
 
-    const handlePasswordChange = (e) => {
-        e.preventDefault();
-        alert(`비밀번호가 ${newPassword}로 변경되었습니다!`);
-        setPassword('');
-        setNewPassword('');
-        setShowPasswordForm(false);
-    };
+    const handleDelete = async () => {
+    const confirmDelete = window.confirm("정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
+    if (!confirmDelete) return;
+
+    try {
+      await authService.deleteAccount();
+      localStorage.removeItem("token"); // 토큰 삭제
+      authService.logout(); 
+      alert("계정이 삭제되었습니다.");
+      window.location.href = "/signin";
+    } catch (err) {
+      console.error(err);
+      alert("계정 삭제에 실패했습니다.");
+    }
+  };
+
+    const handlePasswordChange = async (e) => {
+    e.preventDefault();
+
+    try {
+      await authService.changePassword(password, newPassword);
+      alert("비밀번호가 성공적으로 변경되었습니다.");
+      setPassword("");
+      setNewPassword("");
+      setShowPasswordForm(false);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
     const handleProfileChange = (e) => {
         e.preventDefault();
         alert(`이름: ${name}, 학교: ${university}, 자격증: ${certificates}, 나이: ${age}, 성별: ${gender}, 지역: ${location}, 번호: ${phone}로 저장되었습니다!`);
         setShowProfileForm(false);
-    };
-
-    const handleAccountDelete = () => {
-        const confirmDelete = window.confirm("정말로 계정을 탈퇴하시겠습니까?");
-        if (confirmDelete) {
-            alert("계정이 탈퇴되었습니다.");
-        }
     };
 
     return (
@@ -173,7 +189,7 @@ function ProfileSettingsPage() {
                 </form>
             )}
 
-            <button onClick={handleAccountDelete} style={styles.deleteButton}>
+            <button onClick={handleDelete} style={styles.deleteButton}>
                 ❌ 계정 탈퇴
             </button>
         </div>
