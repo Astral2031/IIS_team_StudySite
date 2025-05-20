@@ -644,8 +644,8 @@ const defaultStudies = [
   },
   {
     id: 14,
-    title: "자기계발 독서 스터디",
-    subject: "자기계발",
+    title: "자기개발 독서 스터디",
+    subject: "자기개발",
     category: "자기개발",
     participants: 5,
     maxParticipants: 10,
@@ -666,13 +666,13 @@ const defaultStudies = [
   },
   {
     id: 16,
-    title: "하버드 비즈니스 독서 스터디",
-    subject: "비즈니스",
+    title: "독서 토론 스터디",
+    subject: "독서&토론",
     category: "자기개발",
     participants: 4,
     maxParticipants: 5,
     createdAt: "2025-03-25",
-    description: "비즈니스 서적 함께 읽기",
+    description: "매주 정해진 책 한 권 읽어오고 함께 토론하기",
     likeCount: 6,
   },
 ];
