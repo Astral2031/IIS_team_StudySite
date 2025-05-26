@@ -1,3 +1,9 @@
+CREATE DATABASE Study_Hub CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+USE Study_Hub;
+
+
 -- 사용자 기본 정보
 CREATE TABLE users ( 
   id INT AUTO_INCREMENT PRIMARY KEY,                   -- 자동 증가 ID
@@ -5,7 +11,7 @@ CREATE TABLE users (
   password VARCHAR(255) NOT NULL,                      -- 비밀번호 (암호화 저장)
   nickname VARCHAR(50) NOT NULL,                       -- 사용자 닉네임
   university VARCHAR(100) NULL,                        -- 소속 대학
-  birthdate NULL,                                      -- 생년월일
+  birthdate DATE NULL,                                      -- 생년월일
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,       -- 가입 일자
   is_admin BOOLEAN DEFAULT FALSE                       -- 관리자 여부 (기본값 false)
 );
@@ -128,5 +134,56 @@ CREATE TABLE post_likes (
 );
 
 
+--예제 데이터 삽입
+INSERT INTO users (email, password, nickname, university, birthdate, is_admin)
+VALUES
+('admin@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '관리자', '경성대학교', '2002-01-01', TRUE),
+('user1@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '홍길동', '서울대학교', '2000-05-20', FALSE),
+('user2@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '김철수', '카이스트', '1999-03-15', FALSE),
+('user3@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '이영희', '고려대학교', '1997-07-15', FALSE);
+
+INSERT INTO studies (title, description, subject, max_members, current_members, category, host_id)
+VALUES
+('웹 개발 스터디', '매주 토요일에 만나요', '웹프론트엔드', 5, 2, 'IT 개발', 1),
+('AI 논문 읽기 모임', '영어 논문 읽고 토론해요', '인공지능', 4, 1, 'IT 개발', 2),
+('토익 스터디', '목표 900점! 스터디원 구해요', '영어', 6, 3, '언어', 1),
+('포토샵 마스터', '디자인 포트폴리오 같이 만들어요', '그래픽 디자인', 5, 2, '디자인', 3),
+('정보처리기사 실전반', '기출풀이 위주로 준비합니다', '자격증', 8, 4, '자격증', 2),
+('자기계발 독서 모임', '성장하는 사람들의 독서 모임', '자기계발', 10, 5, '자기개발', 1),
+('백엔드 마이크로서비스 설계', 'Node.js + Docker 연습합니다', '백엔드', 4, 1, 'IT 개발', 3);
+
+INSERT INTO study_applications (study_id, user_id, message, status)
+VALUES
+(1, 2, '웹 개발에 관심 많아요!', 'pending'),
+(2, 3, 'AI 전공입니다! 같이 공부하고 싶어요.', 'accepted');
+
+INSERT INTO study_members (study_id, user_id)
+VALUES
+(1, 1),  -- 관리자
+(1, 2),
+(2, 2);  -- 중복 멤버 예시
+
+INSERT INTO notice_posts (title, content, author_id)
+VALUES
+('사이트 오픈 안내', '스터디 모집 플랫폼이 오픈했습니다!', 1);
+
+INSERT INTO free_posts (title, content, author_id)
+VALUES
+('오늘 날씨 너무 좋네요~', '공부는 하기 싫고... 산책이나 할까?', 2),
+('스터디 추천해 주세요!', '백엔드 위주로 공부하는 사람 모임 있나요?', 3);
+
+INSERT INTO qna_posts (title, content, author_id)
+VALUES
+('React useState 질문 있어요', 'useState에 초기값으로 배열 넣을 때 주의할 점이 뭔가요?', 3);
+
+INSERT INTO comments (post_type, post_id, author_id, content)
+VALUES
+('free', 1, 3, '저도요! 오늘 너무 좋네요~'),
+('qna', 1, 1, '초기값은 항상 새로운 배열로 넣어주세요.');
+
+INSERT INTO post_likes (post_type, post_id, user_id)
+VALUES
+('freetalk', 1, 2),
+('qna', 1, 1);
 
 

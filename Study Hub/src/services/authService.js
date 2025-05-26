@@ -1,7 +1,7 @@
 import apiClient from "./apiClient.js";
 import axios from "axios";
 
-const API_URL = "/api/auth";
+const API = "/api/auth";
 
 const authService = {
   login: async (email, password) => {
@@ -40,19 +40,39 @@ const authService = {
     }
   },
   deleteAccount: async () => {
-  const storedUser = JSON.parse(localStorage.getItem("currentUser"));
-  const token = storedUser?.token;
+    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+    const token = storedUser?.token;
 
-  if (!token) throw new Error("로그인이 필요합니다.");
+    if (!token) throw new Error("로그인이 필요합니다.");
 
-  const res = await axios.delete(`${API_URL}/delete`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+    const res = await axios.delete(`${API}/delete`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  return res.data;
+    return res.data;
+  },
+  getProfile: async () => {
+  try {
+    const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+    const token = storedUser?.token;
+
+    if (!token) throw new Error("로그인이 필요합니다.");
+
+    const response = await axios.get(`${API}/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("내 정보 불러오기 오류:", error);
+    return {};
+  }
 },
+
 
 };
 

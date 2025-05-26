@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { authService } from '../services/authService.js';
 
 function ProfileSettingsPage() {
@@ -19,6 +19,26 @@ function ProfileSettingsPage() {
     const [location, setLocation] = useState('부산');
     const [phone, setPhone] = useState('010-1234-5678');
 
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const profile = await authService.getProfile(); // getProfile 함수 호출
+                setName(profile.name || '');
+                setUniversity(profile.university || '');
+                setCertificates(profile.certificates || '');
+                setAge(profile.age || '');
+                setGender(profile.gender || '');
+                setLocation(profile.location || '');
+                setPhone(profile.phone || '');
+            } catch (err) {
+                console.error("프로필 정보를 불러오는데 실패했습니다.", err);
+                alert("프로필 정보를 불러올 수 없습니다.");
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
     const togglePasswordForm = () => {
         setShowPasswordForm(!showPasswordForm);
     };
@@ -28,34 +48,34 @@ function ProfileSettingsPage() {
     };
 
     const handleDelete = async () => {
-    const confirmDelete = window.confirm("정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
-    if (!confirmDelete) return;
+        const confirmDelete = window.confirm("정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.");
+        if (!confirmDelete) return;
 
-    try {
-      await authService.deleteAccount();
-      localStorage.removeItem("token"); // 토큰 삭제
-      authService.logout(); 
-      alert("계정이 삭제되었습니다.");
-      window.location.href = "/signin";
-    } catch (err) {
-      console.error(err);
-      alert("계정 삭제에 실패했습니다.");
-    }
-  };
+        try {
+            await authService.deleteAccount();
+            localStorage.removeItem("token"); // 토큰 삭제
+            authService.logout();
+            alert("계정이 삭제되었습니다.");
+            window.location.href = "/signin";
+        } catch (err) {
+            console.error(err);
+            alert("계정 삭제에 실패했습니다.");
+        }
+    };
 
     const handlePasswordChange = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    try {
-      await authService.changePassword(password, newPassword);
-      alert("비밀번호가 성공적으로 변경되었습니다.");
-      setPassword("");
-      setNewPassword("");
-      setShowPasswordForm(false);
-    } catch (error) {
-      alert(error.message);
-    }
-  };
+        try {
+            await authService.changePassword(password, newPassword);
+            alert("비밀번호가 성공적으로 변경되었습니다.");
+            setPassword("");
+            setNewPassword("");
+            setShowPasswordForm(false);
+        } catch (error) {
+            alert(error.message);
+        }
+    };
 
     const handleProfileChange = (e) => {
         e.preventDefault();

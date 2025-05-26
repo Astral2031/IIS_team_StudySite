@@ -11,7 +11,7 @@ export const register = async (req, res) => {
 
   if (!name || !email || !password) {
     return res.status(400).json({ message: "모든 필드를 입력하세요." });
-  } 
+  }
 
   const [existingUsers] = await db.query("SELECT id FROM users WHERE email = ?", [email]);
   if (existingUsers.length > 0) {
@@ -73,24 +73,24 @@ export const login = async (req, res) => {
     }
 
     // 로그인 성공 후 토큰 발급
-  const token = jwt.sign(
-    {
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        nickname: user.nickname,
+        isAdmin: user.is_admin === 1,
+      },
+      JWT_SECRET,
+      { expiresIn: "1d" } // 토큰 유효기간 1일
+    );
+
+    res.json({
+      token,
       id: user.id,
       email: user.email,
       nickname: user.nickname,
       isAdmin: user.is_admin === 1,
-    },
-    JWT_SECRET,
-    { expiresIn: "1d" } // 토큰 유효기간 1일
-  );
-
-  res.json({
-    token,
-    id: user.id,
-    email: user.email,
-    nickname: user.nickname,
-    isAdmin: user.is_admin === 1,
-  });
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
@@ -141,6 +141,24 @@ export const deleteAccount = async (req, res) => {
   } catch (error) {
     console.error("계정 삭제 중 오류:", error);
     res.status(500).json({ message: "계정 삭제에 실패했습니다." });
+  }
+};
+export const getProfile = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const [rows] = await db.query("SELECT id, nickname AS name, university, birthdate, is_admin FROM users WHERE id = ?", [userId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
+    }
+
+    const user = rows[0];
+
+    res.status(200).json(user);
+  } catch (err) {
+    console.error("프로필 조회 오류:", err);
+    res.status(500).json({ message: "서버 오류로 프로필을 가져오지 못했습니다." });
   }
 };
 
