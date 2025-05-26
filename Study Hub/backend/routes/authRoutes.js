@@ -8,6 +8,6 @@ router.post("/register", register);
 router.post("/login", login);
 router.patch("/change-password", authMiddleware, changePassword);
 router.delete("/delete", authMiddleware, deleteAccount);
-router.get("profile", authMiddleware, getProfile);
+router.get("/profile", authMiddleware, getProfile);
 
 export default router;
