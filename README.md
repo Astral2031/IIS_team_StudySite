@@ -14,7 +14,7 @@
 
 - **웹 서버**: IIS  
 - **프론트엔드**: HTML, CSS, JavaScript  
-- **데이터베이스**: MS SQL
+- **데이터베이스**: MY SQL
 
 ## 주요 기능
 
