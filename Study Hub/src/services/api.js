@@ -2,7 +2,7 @@
 import axios from "axios";
 
 // 백엔드 API 주소 (개발 환경)
-const API_URL = "http://localhost:5000/api";
+const API_URL = "http://localhost:5003/api";
 
 // API 인스턴스 생성
 const apiClient = axios.create({

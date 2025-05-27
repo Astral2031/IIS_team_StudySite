@@ -13,7 +13,7 @@ import commentRouter from "./routes/commentsRoutes.js";
 //dotenv.config();
 
 const app = express();
-const PORT = 5000;
+const PORT = 5003;
 
 app.use(cors({
   origin: "http://localhost:3000",
