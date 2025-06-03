@@ -1,60 +1,78 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import apiClient from "../services/apiClient.js"
+
 
 function StudyManagementPage() {
-    const [applicants, setApplicants] = useState([
-        {
-            id: 1,
-            name: '홍길동1',
-            date: '2025-01-11',
-            university: '서울대학교',
-            certificates: '정보처리기사',
-            message: '열심히 참여하겠습니다!',
-        },
-        {
-            id: 2,
-            name: '홍길동2',
-            date: '2025-01-11',
-            university: '고려대학교',
-            certificates: 'SQLD',
-            message: '개발 공부 열심히 할게요!',
-        },
-        {
-            id: 3,
-            name: '홍길동3',
-            date: '2025-01-12',
-            university: '연세대학교',
-            certificates: '웹디자인기능사',
-            message: '프론트엔드 쪽으로 관심 많습니다!',
-        },
-        {
-            id: 4,
-            name: '홍길동4',
-            date: '2025-01-13',
-            university: '성균관대학교',
-            certificates: '정보처리산업기사',
-            message: '스터디에서 많이 배우고 싶어요!',
-        },
-        {
-            id: 5,
-            name: '홍길동5',
-            date: '2025-01-15',
-            university: '한양대학교',
-            certificates: 'ADsP',
-            message: '백엔드 쪽 스터디 관심있어요!',
-        },
-    ]);
+    const { studyId } = useParams();
+    const [applicants, setApplicants] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const handleAccept = (id) => {
-        const user = applicants.find(a => a.id === id);
-        alert(`${user.name}님을 수락했습니다!`);
-        setApplicants(applicants.filter(a => a.id !== id));
+
+    const [hostedStudyId, setHostedStudyId] = useState(null);
+
+useEffect(() => {
+  const fetchHostedStudyId = async () => {
+    try {
+      const res = await apiClient.get('/studies/hosted');
+      // Axios는 응답 데이터가 res.data에 있음
+      if (res.data.length > 0) {
+        setHostedStudyId(res.data[0].id);
+      }
+    } catch (error) {
+      console.error("호스트 스터디 조회 실패:", error);
+    }
+  };
+
+  fetchHostedStudyId();
+}, []);
+
+
+
+
+
+    // 1) 신청자 목록 불러오기
+    const fetchApplicants = async () => {
+        if (!studyId) return;  // studyId 없으면 요청 안함
+
+        try {
+            const res = await apiClient.get(`/studies/${studyId}/applicants`);
+            setApplicants(res.data);
+        } catch (err) {
+            alert(err.response?.data?.message || "신청자 목록 불러오기 실패");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleReject = (id) => {
-        const user = applicants.find(a => a.id === id);
-        alert(`${user.name}님의 신청을 거절했습니다.`);
-        setApplicants(applicants.filter(a => a.id !== id));
+
+    useEffect(() => {
+        fetchApplicants();
+    }, [studyId]);
+
+    // 2) 수락 API 호출 함수
+    const handleAccept = async (id) => {
+        try {
+            await apiClient.patch(`/study-applications/${id}/status`, { status: "accepted" });
+            alert("수락 처리 완료");
+            setApplicants(applicants.filter((a) => a.id !== id));
+        } catch (err) {
+            alert(err.response?.data?.message || "수락 처리 실패");
+        }
     };
+
+    // 3) 거절 API 호출 함수
+    const handleReject = async (id) => {
+        try {
+            await apiClient.patch(`/study-applications/${id}/status`, { status: "rejected" });
+            alert("거절 처리 완료");
+            setApplicants(applicants.filter((a) => a.id !== id));
+        } catch (err) {
+            alert(err.response?.data?.message || "거절 처리 실패");
+        }
+    };
+
+    if (loading) return <p>로딩중...</p>;
 
     return (
         <div style={styles.container}>
@@ -69,10 +87,13 @@ function StudyManagementPage() {
                         <li key={applicant.id} style={styles.listItem}>
                             <div style={styles.info}>
                                 <h3 style={styles.name}>{applicant.name}</h3>
-                                <p><strong>신청일:</strong> {applicant.date}</p>
-                                <p><strong>대학교:</strong> {applicant.university}</p>
-                                <p><strong>보유 자격증:</strong> {applicant.certificates}</p>
-                                <p><strong>자기소개:</strong> {applicant.message}</p>
+                                <p>
+                                    <strong>신청일:</strong>{" "}
+                                    {new Date(applicant.applied_at).toLocaleDateString()}
+                                </p>
+                                <p>
+                                    <strong>자기소개:</strong> {applicant.message}
+                                </p>
                             </div>
                             <div style={styles.buttonGroup}>
                                 <button
@@ -98,70 +119,70 @@ function StudyManagementPage() {
 
 const styles = {
     container: {
-        maxWidth: '700px',
-        margin: '50px auto',
-        padding: '30px',
-        border: '1px solid #ddd',
-        borderRadius: '14px',
-        backgroundColor: '#ffffff',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-        textAlign: 'center',
+        maxWidth: "700px",
+        margin: "50px auto",
+        padding: "30px",
+        border: "1px solid #ddd",
+        borderRadius: "14px",
+        backgroundColor: "#ffffff",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+        textAlign: "center",
     },
     title: {
-        fontSize: '26px',
-        marginBottom: '10px',
-        color: '#333',
+        fontSize: "26px",
+        marginBottom: "10px",
+        color: "#333",
     },
     subtitle: {
-        marginBottom: '30px',
-        color: '#777',
+        marginBottom: "30px",
+        color: "#777",
     },
     noApplicants: {
-        color: '#999',
+        color: "#999",
     },
     list: {
-        listStyle: 'none',
+        listStyle: "none",
         padding: 0,
         margin: 0,
     },
     listItem: {
-        padding: '20px',
-        marginBottom: '20px',
-        border: '1px solid #eee',
-        borderRadius: '12px',
-        backgroundColor: '#fafafa',
-        textAlign: 'left',
+        padding: "20px",
+        marginBottom: "20px",
+        border: "1px solid #eee",
+        borderRadius: "12px",
+        backgroundColor: "#fafafa",
+        textAlign: "left",
     },
     info: {
-        marginBottom: '16px',
+        marginBottom: "16px",
     },
     name: {
-        margin: '0 0 10px',
-        fontSize: '20px',
-        color: '#333',
+        margin: "0 0 10px",
+        fontSize: "20px",
+        color: "#333",
     },
     buttonGroup: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: '10px',
+        display: "flex",
+        justifyContent: "flex-end",
+        gap: "10px",
     },
     acceptButton: {
-        padding: '8px 16px',
-        backgroundColor: '#4CAF50',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontSize: '14px',
+        padding: "8px 16px",
+        backgroundColor: "#4CAF50",
+        color: "#fff",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontSize: "14px",
     },
     rejectButton: {
-        padding: '8px 16px',
-        backgroundColor: '#f44336',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontSize: '14px',
+        padding: "8px 16px",
+        backgroundColor: "#f44336",
+        color: "#fff",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontSize: "14px",
     },
 };
 

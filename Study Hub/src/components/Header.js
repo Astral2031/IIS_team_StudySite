@@ -1,12 +1,36 @@
 import { useAuth } from "../contexts/AuthContext.js";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import { Link, NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import apiClient from "../services/apiClient.js";
 
 const Header = () => {
+  const { studyId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logout, isAuthenticated, isAdmin } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [hostedStudyId, setHostedStudyId] = useState(null);
+
+useEffect(() => {
+  const fetchHostedStudyId = async () => {
+    try {
+      const res = await apiClient.get("/studies/hosted");
+      const data = res.data;
+
+      if (data.length > 0) {
+        setHostedStudyId(data[0].id);
+      }
+    } catch (err) {
+      console.error("호스트 스터디 ID 조회 실패:", err);
+    }
+  };
+
+  if (isAuthenticated) {
+    fetchHostedStudyId();
+  }
+}, [isAuthenticated]);
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -20,6 +44,7 @@ const Header = () => {
     logout();
     navigate("/");
   };
+  
 
   return (
     <header>
@@ -127,7 +152,9 @@ const Header = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link className="dropdown-item" to="/study-applicants">
+                  <Link
+                    className="dropdown-item"
+                    to={hostedStudyId ? `/studies/${hostedStudyId}/manage` : "#"}>
                     스터디 신청자 관리
                   </Link>
                 </li>

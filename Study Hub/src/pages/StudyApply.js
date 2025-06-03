@@ -1,4 +1,4 @@
-import { studyService } from "../services/storageService.js";
+import { studyService } from "../services/studyService.js";
 import { useAuth } from "../contexts/AuthContext.js";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -14,25 +14,32 @@ const StudyApply = () => {
   const [loading, setLoading] = useState(true);
   const [applicationData, setApplicationData] = useState({
     name: "",
-    school: "",
-    qualification: "",
     availableTime: "",
     reason: "",
   });
 
   useEffect(() => {
-    const foundStudy = studyService.getStudyById(id);
-    if (foundStudy) {
+  const fetchStudy = async () => {
+    try {
+      const foundStudy = await studyService.getStudyById(id);
       setStudy(foundStudy);
+
       if (currentUser) {
         setApplicationData((prev) => ({
           ...prev,
-          name: currentUser.name || "",
+          name: currentUser.nickname || "",
         }));
       }
+    } catch (error) {
+      console.error("스터디 상세 조회 실패:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [id, currentUser]);
+  };
+
+  fetchStudy();
+}, [id, currentUser]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,11 +49,25 @@ const StudyApply = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    await studyService.applyToStudy(id, {
+      userId: currentUser.id,
+      name: applicationData.name, 
+      available_time: applicationData.availableTime,
+      reason: applicationData.reason,
+    });
+
     alert("스터디 신청이 완료되었습니다!");
     navigate("/study-list");
-  };
+  } catch (error) {
+    console.error("스터디 신청 실패:", error);
+    alert("신청에 실패했습니다. 다시 시도해주세요.");
+  }
+};
+
 
   if (loading) {
     return (
@@ -95,35 +116,12 @@ const StudyApply = () => {
               <input
                 type="text"
                 className="form-control"
+                name="name"
                 value={applicationData.name}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">학교</label>
-              <input
-                type="text"
-                className="form-control"
-                name="school"
-                value={applicationData.school}
                 onChange={handleChange}
-                placeholder="학교명을 입력하세요"
+                placeholder="이름을 입력하세요"
               />
             </div>
-
-            <div className="mb-3">
-              <label className="form-label">자격증</label>
-              <input
-                type="text"
-                className="form-control"
-                name="qualification"
-                value={applicationData.qualification}
-                onChange={handleChange}
-                placeholder="보유한 자격증"
-              />
-            </div>
-
             <div className="mb-3">
               <label className="form-label">참여 가능 시간</label>
               <input

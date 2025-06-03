@@ -11,10 +11,14 @@ CREATE TABLE users (
   password VARCHAR(255) NOT NULL,                      -- 비밀번호 (암호화 저장)
   nickname VARCHAR(50) NOT NULL,                       -- 사용자 닉네임
   university VARCHAR(100) NULL,                        -- 소속 대학
-  birthdate DATE NULL,                                      -- 생년월일
+  birthdate DATE NULL,                                 -- 생년월일
+  certificate VARCHAR(255) NULL,                        -- 자격증 이름 (null 가능)
+  region VARCHAR(100) NULL,                             -- 사는 지역 (null 가능)
+  phone VARCHAR(20) NULL,                               -- 전화번호 (null 가능)
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,       -- 가입 일자
-  is_admin BOOLEAN DEFAULT FALSE                       -- 관리자 여부 (기본값 false)
+  is_admin BOOLEAN DEFAULT FALSE                        -- 관리자 여부 (기본값 false)
 );
+
 
 
 -- 스터디 모집글 정보
@@ -39,13 +43,16 @@ CREATE TABLE study_applications (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,                              -- 지원 ID
   study_id BIGINT NOT NULL,                                          -- 지원한 스터디 ID
   user_id INT NOT NULL,                                              -- 지원자 ID
-  message TEXT,                                                      -- 자기소개 또는 지원 메시지
+  name VARCHAR(100) NOT NULL,                                        -- 지원자 이름
+  available_time VARCHAR(255) NOT NULL,                              -- 참여 가능 시간 (예: '주말 오후', '평일 저녁' 등)
+  message TEXT NOT NULL,                                             -- 자기소개 또는 지원 메시지
   status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',  -- 지원 상태(대기 중, 승인, 거절)
   applied_at DATETIME DEFAULT CURRENT_TIMESTAMP,                     -- 지원 일시
 
   FOREIGN KEY (study_id) REFERENCES studies(id) ON DELETE CASCADE,   -- 스터디 삭제 시 지원 내역 삭제
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE       -- 사용자 삭제 시 지원 내역 삭제
 );
+
 
 
 -- 스터디 멤버 목록
@@ -135,12 +142,12 @@ CREATE TABLE post_likes (
 
 
 --예제 데이터 삽입
-INSERT INTO users (email, password, nickname, university, birthdate, is_admin)
+INSERT INTO users (email, password, nickname, university, birthdate, certificate, region, phone, is_admin)
 VALUES
-('admin@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '관리자', '경성대학교', '2002-01-01', TRUE),
-('user1@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '홍길동', '서울대학교', '2000-05-20', FALSE),
-('user2@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '김철수', '카이스트', '1999-03-15', FALSE),
-('user3@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '이영희', '고려대학교', '1997-07-15', FALSE);
+('admin@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '관리자', '경성대학교', '2002-01-01', '정보처리기사', '부산광역시', '010-1234-5678', TRUE),
+('user1@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '홍길동', '서울대학교', '2000-05-20', '토익 900점', '서울특별시', '010-2345-6789', FALSE),
+('user2@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '김철수', '카이스트', '1999-03-15', '리눅스 마스터', '대전광역시', '010-3456-7890', FALSE),
+('user3@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '이영희', '고려대학교', '1997-07-15', '컴퓨터활용능력 1급', '서울특별시', '010-4567-8901', FALSE);
 
 INSERT INTO studies (title, description, subject, max_members, current_members, category, host_id)
 VALUES
@@ -152,10 +159,11 @@ VALUES
 ('자기계발 독서 모임', '성장하는 사람들의 독서 모임', '자기계발', 10, 5, '자기개발', 1),
 ('백엔드 마이크로서비스 설계', 'Node.js + Docker 연습합니다', '백엔드', 4, 1, 'IT 개발', 3);
 
-INSERT INTO study_applications (study_id, user_id, message, status)
+INSERT INTO study_applications (study_id, user_id, name, available_time, message, status)
 VALUES
-(1, 2, '웹 개발에 관심 많아요!', 'pending'),
-(2, 3, 'AI 전공입니다! 같이 공부하고 싶어요.', 'accepted');
+(1, 2, '홍길동', '주말 오후', '웹 개발에 관심 많아요!', 'pending'),
+(2, 3, '김철수', '평일 저녁', 'AI 전공입니다! 같이 공부하고 싶어요.', 'accepted');
+
 
 INSERT INTO study_members (study_id, user_id)
 VALUES

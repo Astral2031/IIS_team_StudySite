@@ -8,10 +8,12 @@ export const authMiddleware = (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
+  
 
   try {
     const decoded = jwt.verify(token, "studyhub");
     req.user = decoded;
+    
     next();
   } catch (err) {
     return res.status(403).json({ message: "유효하지 않은 토큰입니다." });

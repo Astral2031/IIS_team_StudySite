@@ -39,7 +39,7 @@ function App() {
               <Route path="/search" element={<SearchResults />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />
-              <Route path="/profile-settings" element={<ProfileSettingsPage />} /> {/* ✅ 계정설정 라우트 추가 */}
+              <Route path="/profile-settings" element={<ProfileSettingsPage />} />
 
               {/* 보호된 라우트 */}
               <Route
@@ -75,7 +75,7 @@ function App() {
                 }
               />
               <Route
-                path="/study-applicants"
+                path="/studies/:studyId/manage"
                 element={
                   <ProtectedRoute>
                     <StudyManagementPage />

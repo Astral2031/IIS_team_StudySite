@@ -15,6 +15,7 @@ import commentRouter from "./routes/commentsRoutes.js";
 const app = express();
 const PORT = 5003;
 
+
 app.use(cors({
   origin: "http://localhost:3000",
   credentials: true,
