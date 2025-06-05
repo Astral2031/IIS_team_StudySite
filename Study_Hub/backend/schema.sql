@@ -5,20 +5,20 @@ USE Study_Hub;
 
 
 -- 사용자 기본 정보
-CREATE TABLE users ( 
+CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,                   -- 자동 증가 ID
   email VARCHAR(255) NOT NULL UNIQUE,                  -- 로그인 이메일 (중복 불가)
-  password VARCHAR(255) NOT NULL,                      -- 비밀번호 (암호화 저장)
-  nickname VARCHAR(50) NOT NULL,                       -- 사용자 닉네임
-  university VARCHAR(100) NULL,                        -- 소속 대학
-  birthdate DATE NULL,                                 -- 생년월일
+  password VARCHAR(255) NOT NULL,                       -- 비밀번호 (암호화 저장)
+  nickname VARCHAR(50) NOT NULL,                        -- 사용자 닉네임
+  university VARCHAR(100) NULL,                         -- 소속 대학
+  age INT NULL,                                         -- 나이 (null 가능)
+  gender VARCHAR(10) NULL,                              -- 성별 (null 가능)
   certificate VARCHAR(255) NULL,                        -- 자격증 이름 (null 가능)
   region VARCHAR(100) NULL,                             -- 사는 지역 (null 가능)
   phone VARCHAR(20) NULL,                               -- 전화번호 (null 가능)
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,       -- 가입 일자
   is_admin BOOLEAN DEFAULT FALSE                        -- 관리자 여부 (기본값 false)
 );
-
 
 
 -- 스터디 모집글 정보

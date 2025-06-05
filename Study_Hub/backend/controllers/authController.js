@@ -147,7 +147,11 @@ export const getProfile = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const [rows] = await db.query("SELECT id, nickname AS name, university, birthdate, is_admin FROM users WHERE id = ?", [userId]);
+    const [rows] = await db.query(
+  "SELECT id, nickname AS name, region, certificate, university, age, phone, gender, is_admin FROM users WHERE id = ?",
+  [userId]
+);
+
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "사용자 정보를 찾을 수 없습니다." });
@@ -162,3 +166,29 @@ export const getProfile = async (req, res) => {
   }
 };
 
+export const updateProfile = async (req, res) => {
+  const userId = req.user.id;
+  console.log("받은 req.body:", req.body);
+  const { nickname, university, certificate, region, phone, age, gender } = req.body;
+
+  try {
+
+
+    const [result] = await db.query(
+      `UPDATE users 
+   SET nickname = ?, university = ?, certificate = ?, region = ?, phone = ?, age = ?, gender = ?
+   WHERE id = ?`,
+      [nickname, university, certificate, region, phone, age, gender, userId]
+    );
+
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    }
+
+    res.json({ message: "프로필이 성공적으로 업데이트되었습니다." });
+  } catch (error) {
+    console.error("프로필 업데이트 오류:", error);
+    res.status(500).json({ message: "서버 오류로 프로필을 수정하지 못했습니다." });
+  }
+};

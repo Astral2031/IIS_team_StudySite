@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { authService } from '../services/authService.js';
+import apiClient from '../services/apiClient.js';
 
 function ProfileSettingsPage() {
     const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -8,12 +9,9 @@ function ProfileSettingsPage() {
 
     const [showProfileForm, setShowProfileForm] = useState(false);
 
-    // 기존 정보
     const [name, setName] = useState('홍길동');
     const [university, setUniversity] = useState('경성대학교');
     const [certificates, setCertificates] = useState('정보처리기사');
-
-    // 새로 추가한 정보
     const [age, setAge] = useState('24');
     const [gender, setGender] = useState('남성');
     const [location, setLocation] = useState('부산');
@@ -25,10 +23,10 @@ function ProfileSettingsPage() {
                 const profile = await authService.getProfile(); // getProfile 함수 호출
                 setName(profile.name || '');
                 setUniversity(profile.university || '');
-                setCertificates(profile.certificates || '');
+                setCertificates(profile.certificate || '');
                 setAge(profile.age || '');
-                setGender(profile.gender || '');
-                setLocation(profile.location || '');
+                setGender(profile.gender || '남성');
+                setLocation(profile.region || '');
                 setPhone(profile.phone || '');
             } catch (err) {
                 console.error("프로필 정보를 불러오는데 실패했습니다.", err);
@@ -77,11 +75,34 @@ function ProfileSettingsPage() {
         }
     };
 
-    const handleProfileChange = (e) => {
+    const handleProfileChange = async (e) => {
         e.preventDefault();
-        alert(`이름: ${name}, 학교: ${university}, 자격증: ${certificates}, 나이: ${age}, 성별: ${gender}, 지역: ${location}, 번호: ${phone}로 저장되었습니다!`);
-        setShowProfileForm(false);
+
+        const payload = {
+  nickname: name,
+  university,
+  certificate: certificates,
+  age: Number(age),
+  region: location,    // location이 region으로 백엔드에 전달
+  phone,
+  gender,
+};
+
+
+
+  console.log("프로필 업데이트 payload:", payload);
+
+        try {
+            await apiClient.patch('/auth/profile-update', payload);
+            alert("프로필 정보가 성공적으로 저장되었습니다.");
+            setShowProfileForm(false);
+        } catch (error) {
+            console.error(error);
+            alert("프로필 저장에 실패했습니다.");
+        }
     };
+
+
 
     return (
         <div style={styles.container}>
