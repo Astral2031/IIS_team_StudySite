@@ -3,7 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import studyRoutes from "./routes/studyRoutes.js";
 import postsRoutes from "./routes/postsRoutes.js";
-import commentRouter from "./routes/commentsRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
 
 //const express = require('express');
 //const cors = require('cors');
@@ -85,7 +85,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/studies", studyRoutes);
 app.use("/api/posts", postsRoutes);
-app.use("/api/posts", commentRouter); 
+app.use("/api/search", searchRoutes);
 
 
 

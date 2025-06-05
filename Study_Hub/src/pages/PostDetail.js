@@ -5,8 +5,9 @@ import { useAuth } from "../contexts/AuthContext.js";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 
-const PostDetail = () => {
-  const { category, id } = useParams();
+const PostDetail = ({ type }) => {
+  const { category: categoryParam, id } = useParams();
+  const category = categoryParam || type;
   const { currentUser, isAuthenticated, isAdmin } = useAuth(); // isAdmin 추가
   const navigate = useNavigate();
 
@@ -21,8 +22,6 @@ const PostDetail = () => {
   const [editContent, setEditContent] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentContent, setEditCommentContent] = useState("");
-
-
 
 
   // 게시글 데이터 가져오기
@@ -63,66 +62,73 @@ const PostDetail = () => {
 
   // 댓글
   const handleCommentSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!isAuthenticated) {
-    if (window.confirm("댓글 작성하려면 로그인 필요. 로그인 페이지로 이동할까요?")) {
-      navigate("/signin", { state: { from: `/community/post/${id}` } });
+    if (!isAuthenticated) {
+      if (window.confirm("댓글 작성하려면 로그인 필요. 로그인 페이지로 이동할까요?")) {
+        navigate("/signin", { state: { from: `/community/post/${id}` } });
+      }
+      return;
     }
-    return;
-  }
 
-  if (!commentContent.trim()) return;
+    if (!commentContent.trim()) return;
 
-  const newComment = {
-    content: commentContent,
-    author: currentUser.name,
-    authorId: currentUser.id,
-    isAnswer: post.isQuestion && !post.hasAnswer,
+    const newComment = {
+      content: commentContent,
+      author: currentUser.name,
+      authorId: currentUser.id,
+      isAnswer: post.isQuestion && !post.hasAnswer,
+    };
+
+    try {
+      if (newComment.isAnswer) {
+        await postService.addAnswer(parseInt(id), newComment);
+      } else {
+        await postService.addComment(category, parseInt(id), newComment);
+      }
+
+      await fetchPost(); // ← 반드시 댓글 등록 후 새로고침
+      setCommentContent(""); // 입력창 초기화
+    } catch (error) {
+      console.error("댓글 등록 중 오류:", error);
+      alert("댓글 등록에 실패했습니다.");
+    }
   };
-
-  try {
-    if (newComment.isAnswer) {
-      await postService.addAnswer(parseInt(id), newComment);
-    } else {
-      await postService.addComment(category, parseInt(id), newComment);
-    }
-
-    await fetchPost(); // ← 반드시 댓글 등록 후 새로고침
-    setCommentContent(""); // 입력창 초기화
-  } catch (error) {
-    console.error("댓글 등록 중 오류:", error);
-    alert("댓글 등록에 실패했습니다.");
-  }
-};
 
 
 
   // 추천
-const handleLike = async () => {
-  if (!isAuthenticated) {
-    const confirmLogin = window.confirm(
-      "게시글을 추천하려면 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?"
-    );
+  const handleLike = async () => {
+    if (!isAuthenticated) {
+      const confirmLogin = window.confirm(
+        "게시글을 추천하려면 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?"
+      );
 
-    
-    if (confirmLogin) {
-      navigate("/signin", { state: { from: `/community/post/${id}` } });
+      if (confirmLogin) {
+        navigate("/signin", { state: { from: `/community/post/${id}` } });
+      }
+      return;
     }
-    return;
-  }
 
-  try {
-    const updatedPost = await postService.likePost(category, id);
+    try {
+      const updatedPost = await postService.likePost(category, id);
 
-    if (updatedPost) {
-      setPost(updatedPost);
-      setLikeStatus(updatedPost.likedBy?.includes(currentUser.id));
+      if (updatedPost) {
+        // 댓글이 포함되어 있지 않다면 기존 댓글 유지
+        setPost((prevPost) => ({
+          ...prevPost,
+          likes: updatedPost.likes,
+          likedBy: updatedPost.likedBy,
+          // 필요하다면 다른 필드도 병합
+        }));
+
+        setLikeStatus(updatedPost.likedBy?.includes(currentUser.id));
+      }
+    } catch (error) {
+      console.error("좋아요 처리 중 오류가 발생했습니다:", error);
     }
-  } catch (error) {
-    console.error("좋아요 처리 중 오류가 발생했습니다:", error);
-  }
-};
+  };
+
 
 
 
@@ -198,39 +204,39 @@ const handleLike = async () => {
 
   // 댓글 수정 저장
   const handleSaveComment = async (commentId) => {
-  if (!editCommentContent.trim()) {
-    alert("댓글 내용을 입력해주세요.");
-    return;
-  }
+    if (!editCommentContent.trim()) {
+      alert("댓글 내용을 입력해주세요.");
+      return;
+    }
 
-  try {
-    await postService.updateComment(category, id, commentId, editCommentContent);
-    await fetchPost();  // 수정 후 최신 댓글 다시 불러오기
+    try {
+      await postService.updateComment(category, id, commentId, editCommentContent);
+      await fetchPost();  // 수정 후 최신 댓글 다시 불러오기
 
-    setEditingCommentId(null);
-    setEditCommentContent("");
-    alert("댓글이 수정되었습니다.");
-  } catch (error) {
-    console.error("댓글 수정 중 오류:", error);
-    alert("댓글 수정에 실패했습니다.");
-  }
-};
+      setEditingCommentId(null);
+      setEditCommentContent("");
+      alert("댓글이 수정되었습니다.");
+    } catch (error) {
+      console.error("댓글 수정 중 오류:", error);
+      alert("댓글 수정에 실패했습니다.");
+    }
+  };
 
 
 
   // 댓글 삭제
   const handleDeleteComment = async (commentId) => {
-  if (!window.confirm("정말 이 댓글을 삭제하시겠습니까?")) return;
+    if (!window.confirm("정말 이 댓글을 삭제하시겠습니까?")) return;
 
-  try {
-    await postService.deleteComment(category, parseInt(id), commentId);
-    await fetchPost();  // 삭제 후 최신 댓글 목록 다시 불러오기
-    alert("댓글이 삭제되었습니다.");
-  } catch (error) {
-    console.error("댓글 삭제 중 오류:", error);
-    alert("댓글 삭제에 실패했습니다.");
-  }
-};
+    try {
+      await postService.deleteComment(category, parseInt(id), commentId);
+      await fetchPost();  // 삭제 후 최신 댓글 목록 다시 불러오기
+      alert("댓글이 삭제되었습니다.");
+    } catch (error) {
+      console.error("댓글 삭제 중 오류:", error);
+      alert("댓글 삭제에 실패했습니다.");
+    }
+  };
 
 
 

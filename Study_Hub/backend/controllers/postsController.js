@@ -258,7 +258,6 @@ export const updatePost = async (req, res) => {
 
 export const toggleLike = async (req, res) => {
   const connection = await db.getConnection();
-  console.log("req.user:", req.user); // 여기에 유저 정보가 제대로 찍히는지 확인
   try {
     const { category, postId } = req.params;
     const userId = req.user.id;
@@ -289,8 +288,6 @@ const [existing] = await connection.query(
   "SELECT * FROM post_likes WHERE post_type = ? AND post_id = ? AND user_id = ?",
   [category, postIdNum, userId]
 );
-
-console.log("existing 좋아요 데이터:", existing);
 
 if (existing.length > 0) {
   // 좋아요 취소

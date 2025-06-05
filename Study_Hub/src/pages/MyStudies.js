@@ -1,40 +1,29 @@
-// src/pages/MyStudies.js
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import apiClient from "../services/apiClient.js"; // API 클라이언트 설정
 
 function MyStudies() {
-  // isAuthenticated 변수 제거 (사용하지 않음)
+  const [studies, setStudies] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [studies] = useState([
-    {
-      id: 1,
-      title: "React 스터디",
-      participants: 5,
-      maxParticipants: 8,
-      startDate: "2025-01-02",
-    },
-    {
-      id: 2,
-      title: "Node.js 심화",
-      participants: 3,
-      maxParticipants: 6,
-      startDate: "2025-01-04",
-    },
-    {
-      id: 3,
-      title: "데이터베이스 마스터",
-      participants: 4,
-      maxParticipants: 8,
-      startDate: "2025-02-15",
-    },
-    {
-      id: 4,
-      title: "웹 개발 스터디",
-      participants: 6,
-      maxParticipants: 10,
-      startDate: "2025-03-10",
-    },
-  ]);
+  useEffect(() => {
+    const fetchStudies = async () => {
+      try {
+        const res = await apiClient.get("/studies/my"); // 참여 중인 스터디
+        console.log("내 스터디 목록:", res.data);
+        setStudies(res.data);
+      } catch (err) {
+        alert("스터디 목록을 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudies();
+  }, []);
+
+  if (loading) return <p className="text-center">로딩 중...</p>;
+
   return (
     <div className="container py-4">
       <h2 className="text-center mb-4">📚 내 스터디 리스트</h2>
@@ -46,11 +35,11 @@ function MyStudies() {
               <div className="card-body">
                 <h3 className="card-title">{study.title}</h3>
                 <p className="card-text">
-                  인원수:{" "}
-                  {study.participants || study.memberCount || study.members}/
-                  {study.maxParticipants || study.maxMembers}명
+                  인원수: {study.current_members}/{study.max_members}명
                 </p>
-                <p className="card-text">시작일: {study.startDate}</p>
+                <p className="card-text">
+                  시작일: {new Date(study.created_at).toLocaleDateString()}
+                </p>
                 <Link
                   to={`/study-apply/${study.id}`}
                   state={{ canApply: false }}

@@ -1,10 +1,9 @@
 import { useAuth } from "../contexts/AuthContext.js";
-import { Link, NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import apiClient from "../services/apiClient.js";
 
 const Header = () => {
-  const { studyId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logout, isAuthenticated, isAdmin } = useAuth();
@@ -12,24 +11,24 @@ const Header = () => {
 
   const [hostedStudyId, setHostedStudyId] = useState(null);
 
-useEffect(() => {
-  const fetchHostedStudyId = async () => {
-    try {
-      const res = await apiClient.get("/studies/hosted");
-      const data = res.data;
+  useEffect(() => {
+    const fetchHostedStudyId = async () => {
+      try {
+        const res = await apiClient.get("/studies/hosted");
+        const data = res.data;
 
-      if (data.length > 0) {
-        setHostedStudyId(data[0].id);
+        if (data.length > 0) {
+          setHostedStudyId(data[0].id);
+        }
+      } catch (err) {
+        console.error("호스트 스터디 ID 조회 실패:", err);
       }
-    } catch (err) {
-      console.error("호스트 스터디 ID 조회 실패:", err);
-    }
-  };
+    };
 
-  if (isAuthenticated) {
-    fetchHostedStudyId();
-  }
-}, [isAuthenticated]);
+    if (isAuthenticated) {
+      fetchHostedStudyId();
+    }
+  }, [isAuthenticated]);
 
 
   const handleSearch = (e) => {
@@ -44,7 +43,7 @@ useEffect(() => {
     logout();
     navigate("/");
   };
-  
+
 
   return (
     <header>

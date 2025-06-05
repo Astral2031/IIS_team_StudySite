@@ -63,7 +63,9 @@ CREATE TABLE study_members (
   joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,                 -- 참가 일자
 
   FOREIGN KEY (study_id) REFERENCES studies(id) ON DELETE CASCADE, -- 스터디 삭제 시 멤버도 삭제
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE     -- 사용자 삭제 시 멤버도 삭제
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,    -- 사용자 삭제 시 멤버도 삭제
+
+  UNIQUE(study_id, user_id)                                      -- 동일 유저가 동일 스터디 중복 참가 방지
 );
 
 

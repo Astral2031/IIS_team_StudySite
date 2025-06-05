@@ -230,3 +230,23 @@ export const updateApplicationStatus = async (req, res) => {
     return res.status(500).json({ message: '서버 오류' });
   }
 };
+export const getMyStudies = async (req, res) => {
+  try {
+    const userId = req.user.id; // 미들웨어로 인증 후 user info req에 저장했다고 가정
+
+    const [rows] = await db.query(
+      `SELECT DISTINCT s.id, s.title, s.current_members, s.max_members, s.created_at
+       FROM studies s
+       LEFT JOIN study_members sm ON s.id = sm.study_id
+       WHERE s.host_id = ? OR sm.user_id = ?
+      `,
+      [userId, userId]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("내 참여 스터디 조회 실패:", error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+};
+

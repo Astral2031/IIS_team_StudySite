@@ -40,6 +40,10 @@ function App() {
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/profile-settings" element={<ProfileSettingsPage />} />
+              <Route path="/free/:id" element={<PostDetail type="freetalk" />} />
+              <Route path="/qna/:id" element={<PostDetail type="qna" />} />
+              <Route path="/notice/:id" element={<PostDetail type="notice" />} />
+
 
               {/* 보호된 라우트 */}
               <Route

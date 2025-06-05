@@ -282,7 +282,6 @@ const categories = [
   "디자인",
   "자격증",
   "자기개발",
-  "직접 작성",
 ];
 
 export default StudyList;
