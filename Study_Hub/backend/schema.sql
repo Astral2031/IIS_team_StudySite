@@ -28,14 +28,16 @@ CREATE TABLE studies (
   description     TEXT NOT NULL,                              -- 설명
   subject         VARCHAR(255) NOT NULL,                      -- 주제
   max_members     INT NOT NULL,                               -- 모집 인원
-  current_members INT DEFAULT 1,                              -- 현재 인원 (옵션)
-  category        VARCHAR(100) NOT NULL,                      -- 카테고리 (문자열로 우선 처리)
+  current_members INT DEFAULT 1,                              -- 현재 인원
+  category        VARCHAR(100) NOT NULL,                      -- 카테고리
+  likes           INT DEFAULT 0,                              -- 좋아요 수
   created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,         -- 생성일
   updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 수정일
   host_id         INT NOT NULL,                               -- 작성자 (users 테이블 참조)
 
-  FOREIGN KEY (host_id) REFERENCES users(id) ON DELETE CASCADE -- 작성자 삭제 시 모집글도 삭제
+  FOREIGN KEY (host_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
 
 
 -- 스터디 지원 기록
@@ -132,7 +134,7 @@ CREATE TABLE comments (
 -- 추천 기록
 CREATE TABLE post_likes (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,            -- 추천 기록 고유 ID
-  post_type ENUM('notice', 'freetalk', 'qna') NOT NULL,-- 게시판 종류
+  post_type ENUM('notice', 'freetalk', 'qna', 'study') NOT NULL,-- 게시판 종류
   post_id BIGINT NOT NULL,                         -- 추천한 게시글 ID
   user_id INT NOT NULL,                            -- 추천한 사용자 ID
   liked_at DATETIME DEFAULT CURRENT_TIMESTAMP,     -- 추천한 시각
@@ -144,22 +146,22 @@ CREATE TABLE post_likes (
 
 
 --예제 데이터 삽입
-INSERT INTO users (email, password, nickname, university, birthdate, certificate, region, phone, is_admin)
+INSERT INTO users (email, password, nickname, university, age, certificate, region, phone, is_admin)
 VALUES
-('admin@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '관리자', '경성대학교', '2002-01-01', '정보처리기사', '부산광역시', '010-1234-5678', TRUE),
-('user1@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '홍길동', '서울대학교', '2000-05-20', '토익 900점', '서울특별시', '010-2345-6789', FALSE),
-('user2@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '김철수', '카이스트', '1999-03-15', '리눅스 마스터', '대전광역시', '010-3456-7890', FALSE),
-('user3@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '이영희', '고려대학교', '1997-07-15', '컴퓨터활용능력 1급', '서울특별시', '010-4567-8901', FALSE);
+('admin@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '관리자', '경성대학교', '25', '정보처리기사', '부산광역시', '010-1234-5678', TRUE),
+('user1@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '홍길동', '서울대학교', '23', '토익 900점', '서울특별시', '010-2345-6789', FALSE),
+('user2@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '김철수', '카이스트', '21', '리눅스 마스터', '대전광역시', '010-3456-7890', FALSE),
+('user3@example.com', '$2b$10$EouFSYYWn.LJwzZHatyD5eZQVEWV1PQ128XZhSEHKhuzKp8Hi/Z2y', '이영희', '고려대학교', '28', '컴퓨터활용능력 1급', '서울특별시', '010-4567-8901', FALSE);
 
-INSERT INTO studies (title, description, subject, max_members, current_members, category, host_id)
+INSERT INTO studies (title, description, subject, max_members, current_members, category, likes, host_id)
 VALUES
-('웹 개발 스터디', '매주 토요일에 만나요', '웹프론트엔드', 5, 2, 'IT 개발', 1),
-('AI 논문 읽기 모임', '영어 논문 읽고 토론해요', '인공지능', 4, 1, 'IT 개발', 2),
-('토익 스터디', '목표 900점! 스터디원 구해요', '영어', 6, 3, '언어', 1),
-('포토샵 마스터', '디자인 포트폴리오 같이 만들어요', '그래픽 디자인', 5, 2, '디자인', 3),
-('정보처리기사 실전반', '기출풀이 위주로 준비합니다', '자격증', 8, 4, '자격증', 2),
-('자기계발 독서 모임', '성장하는 사람들의 독서 모임', '자기계발', 10, 5, '자기개발', 1),
-('백엔드 마이크로서비스 설계', 'Node.js + Docker 연습합니다', '백엔드', 4, 1, 'IT 개발', 3);
+('웹 개발 스터디', '매주 토요일에 만나요', '웹프론트엔드', 5, 2, 'IT 개발', 1, 1),
+('AI 논문 읽기 모임', '영어 논문 읽고 토론해요', '인공지능', 4, 1, 'IT 개발', 2, 2),
+('토익 스터디', '목표 900점! 스터디원 구해요', '영어', 6, 3, '언어', 0, 1),
+('포토샵 마스터', '디자인 포트폴리오 같이 만들어요', '그래픽 디자인', 5, 2, '디자인', 5, 3),
+('정보처리기사 실전반', '기출풀이 위주로 준비합니다', '자격증', 8, 4, '자격증', 3, 2),
+('자기계발 독서 모임', '성장하는 사람들의 독서 모임', '자기계발', 10, 5, '자기개발', 4, 1),
+('백엔드 마이크로서비스 설계', 'Node.js + Docker 연습합니다', '백엔드', 4, 1, 'IT 개발', 6, 3);
 
 INSERT INTO study_applications (study_id, user_id, name, available_time, message, status)
 VALUES
@@ -173,18 +175,18 @@ VALUES
 (1, 2),
 (2, 2);  -- 중복 멤버 예시
 
-INSERT INTO notice_posts (title, content, author_id)
+INSERT INTO notice_posts (title, content, views, likes, author_id)
 VALUES
-('사이트 오픈 안내', '스터디 모집 플랫폼이 오픈했습니다!', 1);
+('사이트 오픈 안내', '스터디 모집 플랫폼이 오픈했습니다!', 10, 50, 1);
 
-INSERT INTO free_posts (title, content, author_id)
+INSERT INTO free_posts (title, content, views, likes, author_id)
 VALUES
-('오늘 날씨 너무 좋네요~', '공부는 하기 싫고... 산책이나 할까?', 2),
-('스터디 추천해 주세요!', '백엔드 위주로 공부하는 사람 모임 있나요?', 3);
+('오늘 날씨 너무 좋네요~', '공부는 하기 싫고... 산책이나 할까?', 20, 13, 2),
+('스터디 추천해 주세요!', '백엔드 위주로 공부하는 사람 모임 있나요?', 11, 10, 3);
 
-INSERT INTO qna_posts (title, content, author_id)
+INSERT INTO qna_posts (title, content, views, likes, author_id)
 VALUES
-('React useState 질문 있어요', 'useState에 초기값으로 배열 넣을 때 주의할 점이 뭔가요?', 3);
+('React useState 질문 있어요', 'useState에 초기값으로 배열 넣을 때 주의할 점이 뭔가요?', 4, 2, 3);
 
 INSERT INTO comments (post_type, post_id, author_id, content)
 VALUES

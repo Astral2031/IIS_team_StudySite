@@ -1,11 +1,16 @@
 import db, { query } from "../config/db.js";
 
 export const createPost = async (req, res) => {
-  const { category } = req.params;
+  let { category } = req.params;  // let으로 바꿔야 아래에서 수정 가능
   const { title, content, author_id } = req.body;
 
   if (!title || !content || !author_id) {
     return res.status(400).json({ error: "필수 데이터가 누락되었습니다." });
+  }
+
+  // popular은 freetalk 게시판에 저장
+  if (category === "popular") {
+    category = "freetalk";
   }
 
   let tableName;
@@ -33,6 +38,7 @@ export const createPost = async (req, res) => {
     return res.status(500).json({ error: "게시글 저장 실패" });
   }
 };
+
 
 export const getPosts = async (req, res) => {
   const { category } = req.params;
@@ -155,25 +161,25 @@ export const getPopularPosts = async (req, res) => {
     const sql = `
       SELECT * FROM (
         SELECT 
-          p.id, p.title, p.views, p.author_id, u.nickname AS author, p.created_at, 'notice' AS category
+          p.id, p.title, p.views, p.likes, p.author_id, u.nickname AS author, p.created_at, 'notice' AS category
         FROM notice_posts p
         JOIN users u ON p.author_id = u.id
 
         UNION ALL
 
         SELECT 
-          p.id, p.title, p.views, p.author_id, u.nickname AS author, p.created_at, 'freetalk' AS category
+          p.id, p.title, p.views, p.likes, p.author_id, u.nickname AS author, p.created_at, 'freetalk' AS category
         FROM free_posts p
         JOIN users u ON p.author_id = u.id
 
         UNION ALL
 
         SELECT 
-          p.id, p.title, p.views, p.author_id, u.nickname AS author, p.created_at, 'qna' AS category
+          p.id, p.title, p.views, p.likes, p.author_id, u.nickname AS author, p.created_at, 'qna' AS category
         FROM qna_posts p
         JOIN users u ON p.author_id = u.id
       ) AS combined_posts
-      ORDER BY views DESC
+      ORDER BY likes DESC
       LIMIT 20;
     `;
 
@@ -257,111 +263,122 @@ export const updatePost = async (req, res) => {
 };
 
 export const toggleLike = async (req, res) => {
-  const connection = await db.getConnection();
-  try {
-    const { category, postId } = req.params;
-    const userId = req.user.id;
+  const { category, postId } = req.params;
+  const userId = req.user.id;
 
-    if (!userId) {
-      return res.status(403).json({ message: "인증된 사용자만 좋아요를 누를 수 있습니다." });
-    }
+  // ✅ 카테고리별 실제 테이블 이름 매핑
+  const tableMap = {
+    study: "studies",
+    notice: "notice_posts",
+    freetalk: "free_posts",
+    qna: "qna_posts",
+  };
 
-    const validCategories = ['notice', 'freetalk', 'qna'];
-    if (!validCategories.includes(category)) {
-      return res.status(400).json({ message: "잘못된 카테고리입니다." });
-    }
-
-    const postIdNum = Number(postId);
-    if (isNaN(postIdNum)) {
-      return res.status(400).json({ message: "잘못된 게시글 ID입니다." });
-    }
-
-    const tableName = category === 'freetalk' ? 'free_posts' : `${category}_posts`;
-
-    await connection.beginTransaction();
-    
-
-
-    // 기존 좋아요 여부 확인
-    // 쿼리 결과를 배열 구조분해로 받기
-const [existing] = await connection.query(
-  "SELECT * FROM post_likes WHERE post_type = ? AND post_id = ? AND user_id = ?",
-  [category, postIdNum, userId]
-);
-
-if (existing.length > 0) {
-  // 좋아요 취소
-  await connection.query(
-    "DELETE FROM post_likes WHERE post_type = ? AND post_id = ? AND user_id = ?",
-    [category, postIdNum, userId]
-  );
-  await connection.query(
-    `UPDATE ${tableName} SET likes = GREATEST(likes - 1, 0) WHERE id = ?`,
-    [postIdNum]
-  );
-} else {
-  // 좋아요 추가
-  try {
-    await connection.query(
-      "INSERT INTO post_likes (post_type, post_id, user_id) VALUES (?, ?, ?)",
-      [category, postIdNum, userId]
-    );
-    await connection.query(
-      `UPDATE ${tableName} SET likes = likes + 1 WHERE id = ?`,
-      [postIdNum]
-    );
-  } catch (error) {
-    if (error.code === "ER_DUP_ENTRY") {
-      console.log("중복 추천 시도 감지, 무시");
-    } else {
-      throw error;
-    }
+  const tableName = tableMap[category];
+  if (!tableName) {
+    return res.status(400).json({ message: "잘못된 카테고리입니다." });
   }
-}
 
-
-    // 최신 게시글 정보 조회
-    const [postRows] = await connection.query(
-      `
-      SELECT p.id, p.title, p.content, p.views, p.likes, p.created_at, u.nickname AS author
-      FROM ${tableName} p
-      JOIN users u ON p.author_id = u.id
-      WHERE p.id = ?
-      `,
-      [postIdNum]
+  try {
+    const [rows] = await db.execute(
+      `SELECT * FROM post_likes WHERE post_type = ? AND post_id = ? AND user_id = ?`,
+      [category, postId, userId]
     );
 
-    if (postRows.length === 0) {
-      await connection.rollback();
-      return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+    if (rows.length > 0) {
+      // 좋아요 취소
+      await db.execute(
+        `DELETE FROM post_likes WHERE post_type = ? AND post_id = ? AND user_id = ?`,
+        [category, postId, userId]
+      );
+      await db.execute(
+        `UPDATE ${tableName} SET likes = likes - 1 WHERE id = ?`,
+        [postId]
+      );
+    } else {
+      // 좋아요 추가
+      await db.execute(
+        `INSERT INTO post_likes (post_type, post_id, user_id, liked_at) VALUES (?, ?, ?, NOW())`,
+        [category, postId, userId]
+      );
+      await db.execute(
+        `UPDATE ${tableName} SET likes = likes + 1 WHERE id = ?`,
+        [postId]
+      );
     }
 
-    const updatedPost = postRows[0];
-
-    // 좋아요한 유저 목록
-    const [likedUsers] = await connection.query(
-      "SELECT user_id FROM post_likes WHERE post_type = ? AND post_id = ?",
-      [category, postIdNum]
+    const [[updated]] = await db.execute(
+      `SELECT likes FROM ${tableName} WHERE id = ?`,
+      [postId]
     );
 
-    updatedPost.likedBy = likedUsers.map(row => row.user_id);
+    const [[likeRow]] = await db.execute(
+      `SELECT * FROM post_likes WHERE post_type = ? AND post_id = ? AND user_id = ?`,
+      [category, postId, userId]
+    );
 
-    await connection.commit();
-
-    res.status(200).json(updatedPost);
+    res.status(200).json({
+      likes: updated.likes,
+      likedBy: likeRow ? [userId] : [],
+    });
   } catch (err) {
-    await connection.rollback();
     console.error("좋아요 처리 중 오류:", err);
-    res.status(500).json({ message: "좋아요 처리 중 오류" });
-  } finally {
-    connection.release();
+    res.status(500).json({ message: "서버 오류 발생" });
   }
 };
+export const getMyAllPosts = async (req, res) => {
+  const { userId } = req.params;
 
+  try {
+    const sql = `
+      SELECT p.id, p.title, p.content, p.views, p.likes, p.created_at, 'notice' AS category
+      FROM notice_posts p
+      WHERE p.author_id = ?
+      UNION ALL
+      SELECT p.id, p.title, p.content, p.views, p.likes, p.created_at, 'freetalk' AS category
+      FROM free_posts p
+      WHERE p.author_id = ?
+      UNION ALL
+      SELECT p.id, p.title, p.content, p.views, p.likes, p.created_at, 'qna' AS category
+      FROM qna_posts p
+      WHERE p.author_id = ?
+      ORDER BY created_at DESC
+    `;
 
+    // userId 3번 넣어줘야 하므로 배열로 전달
+    const [rows] = await db.execute(sql, [userId, userId, userId]);
 
+    return res.status(200).json({ posts: rows });
+  } catch (error) {
+    console.error("내가 쓴 모든 글 조회 실패:", error);
+    return res.status(500).json({ error: "내가 쓴 모든 글 조회 실패" });
+  }
+};
+export const getMyAllComments = async (req, res) => {
+  const { userId } = req.params;
 
+  try {
+    const sql = `
+      SELECT c.id, c.content, c.created_at, c.updated_at, c.post_type, c.post_id,
+             p.title AS post_title
+      FROM comments c
+      LEFT JOIN (
+        SELECT id, title, 'notice' AS post_type FROM notice_posts
+        UNION ALL
+        SELECT id, title, 'freetalk' AS post_type FROM free_posts
+        UNION ALL
+        SELECT id, title, 'qna' AS post_type FROM qna_posts
+      ) p ON c.post_id = p.id AND c.post_type = p.post_type
+      WHERE c.author_id = ?
+      ORDER BY c.created_at DESC
+    `;
 
+    const [comments] = await db.execute(sql, [userId]);
 
-
+    return res.status(200).json({ comments });
+  } catch (error) {
+    console.error("내가 쓴 댓글 조회 실패:", error);
+    return res.status(500).json({ error: "내가 쓴 댓글 조회 실패" });
+  }
+};
 

@@ -5,8 +5,8 @@ import { createStudy, getStudies, deleteStudy, applyToStudy, getStudyById, getMy
 const router = express.Router();
 
 router.post("/", createStudy);
-router.get("/hosted", authMiddleware, getHostedStudies);
 router.get("/", getStudies);
+router.get("/hosted", authMiddleware, getHostedStudies);
 router.get("/my", authMiddleware, getMyStudies);
 router.delete("/:id", deleteStudy);
 router.post("/:id/apply", applyToStudy);

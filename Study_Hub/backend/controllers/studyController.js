@@ -45,24 +45,30 @@ export const createStudy = async (req, res) => {
 
 export const getStudies = async (req, res) => {
   try {
-    const { category } = req.query;
+    const { category, sort } = req.query;
 
     let query = `SELECT * FROM studies`;
-    let values = [];
+    const values = [];
 
     if (category && category !== "전체") {
       query += ` WHERE category = ?`;
       values.push(category);
     }
 
-    const [studies] = await db.query(query, values);
+    if (sort === "new") {
+      query += category && category !== "전체" ? ` ORDER BY created_at DESC` : ` ORDER BY created_at DESC`;
+    } else if (sort === "popular") {
+      query += category && category !== "전체" ? ` ORDER BY likes DESC` : ` ORDER BY likes DESC`;
+    }
 
+    const [studies] = await db.query(query, values);
     res.json(studies);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "서버 오류 발생" });
   }
 };
+
 
 export const deleteStudy = async (req, res) => {
   try {

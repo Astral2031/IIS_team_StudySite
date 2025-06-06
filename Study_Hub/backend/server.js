@@ -4,6 +4,7 @@ import authRoutes from "./routes/authRoutes.js";
 import studyRoutes from "./routes/studyRoutes.js";
 import postsRoutes from "./routes/postsRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
+import commetRoutes from "./routes/commentsRoutes.js";
 
 //const express = require('express');
 //const cors = require('cors');
@@ -13,11 +14,11 @@ import searchRoutes from "./routes/searchRoutes.js";
 //dotenv.config();
 
 const app = express();
-const PORT = 5003;
+const PORT = process.env.PORT;
 
 
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin : process.env.CLIENT_ORIGIN,
   credentials: true,
 }));
 
@@ -86,6 +87,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/studies", studyRoutes);
 app.use("/api/posts", postsRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/comments", commetRoutes);
 
 
 
